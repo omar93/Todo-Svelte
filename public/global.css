@@ -66,9 +66,3 @@ button:focus {
 button:hover {
 	cursor: pointer;
 }
-
-.add-button {
-	position: absolute;
-	top: 1px;
-	left: 1px;
-}

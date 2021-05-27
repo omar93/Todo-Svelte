@@ -5,7 +5,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public --host 192.168.10.224 --no-clear"
+    "start": "sirv public --no-clear",
+    "startlan": "sirv public --host 192.168.10.224 --no-clear"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
@@ -19,6 +20,6 @@
   },
   "dependencies": {
     "sirv-cli": "^1.0.0",
-    "uuid": "^8.3.2"
+    "uuid-v4": "^0.1.0"
   }
 }

@@ -13,7 +13,7 @@
 </script>
 
 <li on:click|stopPropagation={updateTodo} in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}">
-    <span id="status" class="{done ? 'done' : 'hidden'} right-border">✔️</span>
+    <span id="status" class="{done ? 'done' : 'hidden'} right-border">✅</span>
     <span id="text"   class="center right-border">{todo}</span>
     <div id="buttonContainer" >
         <span id="button" on:click|stopPropagation={removeTodo} class="center">X</span> 
@@ -22,14 +22,16 @@
 
 <style>
     li {
+        max-width: 100%;
         height: 50px;
         list-style: none;
         display: grid;
         grid-template-columns: 50px 1fr 50px;
         grid-template-areas: 'status text button';
-        border: 1px solid black;
         background-color: rgb(255, 252, 86);
         margin-top: 10px;
+        border: 1px solid black;
+        border-radius:7px;
     }
 
     #status {
