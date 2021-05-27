@@ -1,15 +1,18 @@
 <script>
-    import { todoStore } from '../store/todoStore'
-    export let todo
+    import { fly } from 'svelte/transition'
+    import { createEventDispatcher } from 'svelte'
+    export let todo, id, done
 
-    let done = false
-
-    const markDone = () => {done = !done}
-    const removeTodo = () => {todoStore.update(data => {return data.filter(data => data != todo)})}
-
+    const dispatch = createEventDispatcher()
+    const removeTodo = () => dispatch('remove', id)
+    const updateTodo = () => {
+        done = !done
+        dispatch('update', {id,done, todo})
+    }
+    
 </script>
 
-<li on:click={markDone}>
+<li on:click|stopPropagation={updateTodo} in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}">
     <span id="status" class="{done ? 'done' : 'hidden'} right-border">✔️</span>
     <span id="text"   class="center right-border">{todo}</span>
     <div id="buttonContainer" >
@@ -25,7 +28,8 @@
         grid-template-columns: 50px 1fr 50px;
         grid-template-areas: 'status text button';
         border: 1px solid black;
-        background-color: rgb(255, 255, 255);
+        background-color: rgb(255, 252, 86);
+        margin-top: 10px;
     }
 
     #status {

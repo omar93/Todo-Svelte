@@ -1,25 +1,26 @@
 <script>
     import { todoStore } from '../store/todoStore'
-
+    import { v4 as uuidv4 } from 'uuid'
+    
     export let todoTextLength
 
     let textField
 
     const addTodo = e => {
         if(textField.length > todoTextLength) {
-            alert('Max 80 characters')
+            alert('Max 80 characters & needs to be bigger tha 0 character')
             textField = ''
             return
         }
         e.preventDefault()
-        textField ? todoStore.update(orignalArray => [...orignalArray, textField]) : ''
+        textField ? todoStore.update(orignalArray => [...orignalArray, {'todo':textField, 'id': uuidv4(),'done': false}]) : ''
         textField = ''
     }
 </script>
 
 <form on:submit={addTodo}>
     <input id="input" type="text"  bind:value={textField} placeholder="Todo">
-    <button on:click={addTodo}>Add Todo</button>
+    <button on:click={addTodo}>➕</button>
 </form>
 
 <style>

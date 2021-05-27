@@ -2,21 +2,26 @@
     import Todo from './Todo.svelte'
     import { todoStore } from '../store/todoStore'
 
+    const removeChild = ({detail: id}) => {
+        $todoStore = $todoStore.filter(todo => todo.id != id)
+    }
+
+    const updateChild = ({detail})=> {
+        const index = $todoStore.findIndex(item => item.id === detail.id)
+        $todoStore[index] = detail
+    }
 </script>
 
 <ul>
     {#each $todoStore as todo}
-        <Todo {todo}></Todo>
+        <Todo {...todo} on:remove={removeChild} on:update={updateChild}></Todo>
     {/each}
 </ul>
 
 <style>
     ul {
         width: 400px;
-        border: 1px solid black;
         list-style: none;
-        padding-left: 0;
-        margin-left: 300px;
-        margin: auto;
+        flex-direction: column-reverse;
     }
 </style>
