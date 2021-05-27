@@ -2,7 +2,7 @@
     import { fly } from 'svelte/transition'
     import { createEventDispatcher } from 'svelte'
     export let todo, id, done
-    let changable = true
+    let changable = false
 
     const dispatch = createEventDispatcher()
     const toggleChange = () => changable = !changable

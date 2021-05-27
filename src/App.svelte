@@ -10,66 +10,78 @@
 	const toggleMenu = () => isHidden = !isHidden
 	
 </script>
-<Header on:menu={toggleMenu}></Header>
-<div class="{isHidden ? 'hidden' : ''}">
-	<Menu></Menu>
+<!--
+
+		<div id="menuContainer" class="{isHidden ? 'hidden' : ''}">
+		<Menu></Menu>
+	</div>
+
+-->
+
+<div id="parent">
+	<Header on:menu={toggleMenu}></Header>
+
+		<div id="listContainer">
+			<TodoList></TodoList>
+		</div>
+	
+		<div id="formContainer">
+			<Form {todoTextLength}></Form>
+		</div>
+
 </div>
 
-<main>
-	<div id="listContainer">
-		<TodoList></TodoList>
-	</div>
-
-	<div id="formContainer">
-		<Form {todoTextLength}></Form>
-	</div>
-</main>
 
 <style>
-	main {
+	#parent {
 		display: flex;
-		height: 95%;
-		width: 40%;
 		flex-direction: column;
-		position: absolute;
-    	bottom:0px;
-		left:30%;
+		height: 100%;
+		width: 40%;
+		margin: auto;
 	}
-	#listContainer {
-		align-self: center;
+	/*
+	
+	#menuContainer {
+		position: absolute;
+		background-color: blueviolet;
 		width: 100%;
+	}
+	.hidden {display: none;}
+	*/
+
+	#listContainer {
+		width: 100%;
+		height: 100%;
 		overflow: scroll;
 		overflow-x: hidden;
 		-ms-overflow-style: none;
 		scrollbar-width: none;
 	}
+
 	#listContainer::-webkit-scrollbar {
-    display: none;
-}
-	#formContainer {
-		margin-bottom: 1px;
-		margin-top: auto;
-		align-self: center;
-		width: 100%;
+    	display: none;
 	}
-	.hidden {display: none;}
+
+	#formContainer {
+		margin-top: auto;
+	}
+
 	@media screen and (max-width: 992px) {
-			main {
-			width: 85%;
+		#parent {
+			width: 100%;
 			border:0;
 			margin: auto;
 			position:static;
 		}
-
 		#listContainer {
 			align-self: center;
+			width: 85%;
+		}
+		#formContainer {
 			width: 100%;
 		}
-
-		#formContainer {
-			margin-bottom: 1px;
-			margin-top: auto;
-			margin-left: 0;
-		}
 	}
+
+
 </style>

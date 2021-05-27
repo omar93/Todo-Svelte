@@ -927,13 +927,13 @@ var app = (function () {
     			attr_dev(img, "id", "img");
     			if (img.src !== (img_src_value = "./profile.jpg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "profile");
-    			attr_dev(img, "class", "svelte-iztsuw");
+    			attr_dev(img, "class", "svelte-3fjf08");
     			add_location(img, file$5, 5, 4, 99);
-    			attr_dev(p, "class", "title svelte-iztsuw");
+    			attr_dev(p, "class", "title svelte-3fjf08");
     			add_location(p, file$5, 6, 1, 150);
-    			attr_dev(div0, "class", "menu svelte-iztsuw");
+    			attr_dev(div0, "class", "menu svelte-3fjf08");
     			add_location(div0, file$5, 7, 1, 189);
-    			attr_dev(div1, "class", "header svelte-iztsuw");
+    			attr_dev(div1, "class", "header svelte-3fjf08");
     			add_location(div1, file$5, 4, 0, 73);
     		},
     		l: function claim(nodes) {
@@ -1042,7 +1042,7 @@ var app = (function () {
     			p.textContent = "Settings, signin, profile etc etc";
     			add_location(p, file$4, 5, 4, 127);
     			attr_dev(div, "id", "menu");
-    			attr_dev(div, "class", "svelte-1o5bzt1");
+    			attr_dev(div, "class", "svelte-1khty5y");
     			add_location(div, file$4, 4, 0, 68);
     		},
     		l: function claim(nodes) {
@@ -1145,24 +1145,24 @@ var app = (function () {
     			span2.textContent = "X";
     			attr_dev(span0, "id", "status");
     			attr_dev(span0, "class", span0_class_value = "" + ((/*done*/ ctx[0] ? "done" : "hidden") + " right-border" + " svelte-n7aopg"));
-    			add_location(span0, file$3, 17, 4, 569);
+    			add_location(span0, file$3, 17, 4, 570);
     			attr_dev(span1, "id", "text");
     			attr_dev(span1, "type", "text");
     			attr_dev(span1, "class", span1_class_value = "" + ((/*changable*/ ctx[2] ? "hidden" : "") + "center right-border" + " svelte-n7aopg"));
-    			add_location(span1, file$3, 22, 4, 658);
+    			add_location(span1, file$3, 22, 4, 659);
     			attr_dev(input, "id", "altText");
     			attr_dev(input, "type", "text");
     			attr_dev(input, "class", input_class_value = "" + (null_to_empty(/*changable*/ ctx[2] ? "" : "hidden") + " svelte-n7aopg"));
     			attr_dev(input, "placeholder", /*todo*/ ctx[1]);
-    			add_location(input, file$3, 24, 4, 787);
+    			add_location(input, file$3, 24, 4, 788);
     			attr_dev(span2, "id", "button");
     			attr_dev(span2, "class", "center svelte-n7aopg");
-    			add_location(span2, file$3, 30, 8, 949);
+    			add_location(span2, file$3, 30, 8, 950);
     			attr_dev(div, "id", "buttonContainer");
     			attr_dev(div, "class", "svelte-n7aopg");
-    			add_location(div, file$3, 29, 4, 912);
+    			add_location(div, file$3, 29, 4, 913);
     			attr_dev(li, "class", "svelte-n7aopg");
-    			add_location(li, file$3, 16, 0, 445);
+    			add_location(li, file$3, 16, 0, 446);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1250,7 +1250,7 @@ var app = (function () {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Todo", slots, []);
     	let { todo } = $$props, { id } = $$props, { done } = $$props;
-    	let changable = true;
+    	let changable = false;
     	const dispatch = createEventDispatcher();
     	const toggleChange = () => $$invalidate(2, changable = !changable);
     	const removeTodo = () => dispatch("remove", id);
@@ -1694,22 +1694,23 @@ var app = (function () {
     			t2 = space();
     			button1 = element("button");
     			t3 = text("➕");
-    			attr_dev(button0, "class", "clear svelte-15beb05");
+    			attr_dev(button0, "class", "clear svelte-1n68xhz");
     			set_style(button0, "height", /*height*/ ctx[1] + "px");
     			add_render_callback(() => /*button0_elementresize_handler*/ ctx[6].call(button0));
-    			add_location(button0, file$1, 27, 0, 673);
-    			attr_dev(input, "class", "input svelte-15beb05");
+    			add_location(button0, file$1, 31, 4, 719);
+    			attr_dev(input, "class", "input svelte-1n68xhz");
     			attr_dev(input, "type", "text");
     			attr_dev(input, "placeholder", "Todo");
-    			add_location(input, file$1, 29, 4, 821);
-    			attr_dev(button1, "class", "add svelte-15beb05");
+    			set_style(input, "height", /*height*/ ctx[1] + "px");
+    			add_location(input, file$1, 33, 8, 875);
+    			add_location(form, file$1, 32, 4, 834);
+    			attr_dev(button1, "class", "add svelte-1n68xhz");
     			set_style(button1, "width", /*width*/ ctx[2] + "px");
     			add_render_callback(() => /*button1_elementresize_handler*/ ctx[8].call(button1));
-    			add_location(button1, file$1, 30, 4, 904);
-    			attr_dev(form, "class", "svelte-15beb05");
-    			add_location(form, file$1, 28, 0, 784);
-    			attr_dev(div, "class", "svelte-15beb05");
-    			add_location(div, file$1, 26, 0, 666);
+    			add_location(button1, file$1, 35, 4, 997);
+    			attr_dev(div, "id", "parent");
+    			attr_dev(div, "class", "svelte-1n68xhz");
+    			add_location(div, file$1, 30, 0, 696);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1723,8 +1724,8 @@ var app = (function () {
     			append_dev(div, form);
     			append_dev(form, input);
     			set_input_value(input, /*textField*/ ctx[0]);
-    			append_dev(form, t2);
-    			append_dev(form, button1);
+    			append_dev(div, t2);
+    			append_dev(div, button1);
     			append_dev(button1, t3);
     			button1_resize_listener = add_resize_listener(button1, /*button1_elementresize_handler*/ ctx[8].bind(button1));
 
@@ -1732,8 +1733,8 @@ var app = (function () {
     				dispose = [
     					listen_dev(button0, "click", /*removeAll*/ ctx[4], false, false, false),
     					listen_dev(input, "input", /*input_input_handler*/ ctx[7]),
-    					listen_dev(button1, "click", /*addTodo*/ ctx[3], false, false, false),
-    					listen_dev(form, "submit", self(/*addTodo*/ ctx[3]), false, false, false)
+    					listen_dev(form, "submit", self(/*addTodo*/ ctx[3]), false, false, false),
+    					listen_dev(button1, "click", /*addTodo*/ ctx[3], false, false, false)
     				];
 
     				mounted = true;
@@ -1742,6 +1743,10 @@ var app = (function () {
     		p: function update(ctx, [dirty]) {
     			if (dirty & /*height*/ 2) {
     				set_style(button0, "height", /*height*/ ctx[1] + "px");
+    			}
+
+    			if (dirty & /*height*/ 2) {
+    				set_style(input, "height", /*height*/ ctx[1] + "px");
     			}
 
     			if (dirty & /*textField*/ 1 && input.value !== /*textField*/ ctx[0]) {
@@ -1902,99 +1907,77 @@ var app = (function () {
     const file = "src\\App.svelte";
 
     function create_fragment(ctx) {
+    	let div2;
     	let header;
     	let t0;
     	let div0;
-    	let menu;
-    	let div0_class_value;
-    	let t1;
-    	let main;
-    	let div1;
     	let todolist;
-    	let t2;
-    	let div2;
+    	let t1;
+    	let div1;
     	let form;
     	let current;
     	header = new Header({ $$inline: true });
-    	header.$on("menu", /*toggleMenu*/ ctx[2]);
-    	menu = new Menu({ $$inline: true });
+    	header.$on("menu", /*toggleMenu*/ ctx[1]);
     	todolist = new TodoList({ $$inline: true });
 
     	form = new Form({
     			props: {
-    				todoTextLength: /*todoTextLength*/ ctx[1]
+    				todoTextLength: /*todoTextLength*/ ctx[0]
     			},
     			$$inline: true
     		});
 
     	const block = {
     		c: function create() {
+    			div2 = element("div");
     			create_component(header.$$.fragment);
     			t0 = space();
     			div0 = element("div");
-    			create_component(menu.$$.fragment);
-    			t1 = space();
-    			main = element("main");
-    			div1 = element("div");
     			create_component(todolist.$$.fragment);
-    			t2 = space();
-    			div2 = element("div");
+    			t1 = space();
+    			div1 = element("div");
     			create_component(form.$$.fragment);
-    			attr_dev(div0, "class", div0_class_value = "" + (null_to_empty(/*isHidden*/ ctx[0] ? "hidden" : "") + " svelte-1oj6t7u"));
-    			add_location(div0, file, 13, 0, 347);
-    			attr_dev(div1, "id", "listContainer");
-    			attr_dev(div1, "class", "svelte-1oj6t7u");
-    			add_location(div1, file, 18, 1, 419);
-    			attr_dev(div2, "id", "formContainer");
-    			attr_dev(div2, "class", "svelte-1oj6t7u");
-    			add_location(div2, file, 22, 1, 478);
-    			attr_dev(main, "class", "svelte-1oj6t7u");
-    			add_location(main, file, 17, 0, 411);
+    			attr_dev(div0, "id", "listContainer");
+    			attr_dev(div0, "class", "svelte-8lk1ob");
+    			add_location(div0, file, 23, 2, 467);
+    			attr_dev(div1, "id", "formContainer");
+    			attr_dev(div1, "class", "svelte-8lk1ob");
+    			add_location(div1, file, 27, 2, 530);
+    			attr_dev(div2, "id", "parent");
+    			attr_dev(div2, "class", "svelte-8lk1ob");
+    			add_location(div2, file, 20, 0, 406);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			mount_component(header, target, anchor);
-    			insert_dev(target, t0, anchor);
-    			insert_dev(target, div0, anchor);
-    			mount_component(menu, div0, null);
-    			insert_dev(target, t1, anchor);
-    			insert_dev(target, main, anchor);
-    			append_dev(main, div1);
-    			mount_component(todolist, div1, null);
-    			append_dev(main, t2);
-    			append_dev(main, div2);
-    			mount_component(form, div2, null);
+    			insert_dev(target, div2, anchor);
+    			mount_component(header, div2, null);
+    			append_dev(div2, t0);
+    			append_dev(div2, div0);
+    			mount_component(todolist, div0, null);
+    			append_dev(div2, t1);
+    			append_dev(div2, div1);
+    			mount_component(form, div1, null);
     			current = true;
     		},
-    		p: function update(ctx, [dirty]) {
-    			if (!current || dirty & /*isHidden*/ 1 && div0_class_value !== (div0_class_value = "" + (null_to_empty(/*isHidden*/ ctx[0] ? "hidden" : "") + " svelte-1oj6t7u"))) {
-    				attr_dev(div0, "class", div0_class_value);
-    			}
-    		},
+    		p: noop,
     		i: function intro(local) {
     			if (current) return;
     			transition_in(header.$$.fragment, local);
-    			transition_in(menu.$$.fragment, local);
     			transition_in(todolist.$$.fragment, local);
     			transition_in(form.$$.fragment, local);
     			current = true;
     		},
     		o: function outro(local) {
     			transition_out(header.$$.fragment, local);
-    			transition_out(menu.$$.fragment, local);
     			transition_out(todolist.$$.fragment, local);
     			transition_out(form.$$.fragment, local);
     			current = false;
     		},
     		d: function destroy(detaching) {
-    			destroy_component(header, detaching);
-    			if (detaching) detach_dev(t0);
-    			if (detaching) detach_dev(div0);
-    			destroy_component(menu);
-    			if (detaching) detach_dev(t1);
-    			if (detaching) detach_dev(main);
+    			if (detaching) detach_dev(div2);
+    			destroy_component(header);
     			destroy_component(todolist);
     			destroy_component(form);
     		}
@@ -2016,7 +1999,7 @@ var app = (function () {
     	validate_slots("App", slots, []);
     	let todoTextLength = 80;
     	let isHidden = true;
-    	const toggleMenu = () => $$invalidate(0, isHidden = !isHidden);
+    	const toggleMenu = () => isHidden = !isHidden;
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
@@ -2034,15 +2017,15 @@ var app = (function () {
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("todoTextLength" in $$props) $$invalidate(1, todoTextLength = $$props.todoTextLength);
-    		if ("isHidden" in $$props) $$invalidate(0, isHidden = $$props.isHidden);
+    		if ("todoTextLength" in $$props) $$invalidate(0, todoTextLength = $$props.todoTextLength);
+    		if ("isHidden" in $$props) isHidden = $$props.isHidden;
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [isHidden, todoTextLength, toggleMenu];
+    	return [todoTextLength, toggleMenu];
     }
 
     class App extends SvelteComponentDev {

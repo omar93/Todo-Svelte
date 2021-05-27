@@ -9,9 +9,8 @@
 <style>
     #menu {
         position: absolute;
-        background-color: indianred;
+        background-color: forestgreen;
         height: 95%;
-        width: 20%;
-        margin-left: 80%;
+        width: 100%;
 	}
 </style>

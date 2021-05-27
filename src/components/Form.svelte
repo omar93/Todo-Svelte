@@ -22,55 +22,51 @@
     const removeAll = () => {
         todoStore.set([])
     }
+    /*
+    så
+    */
+    
 </script>
 
-<div>
-<button class="clear" bind:clientWidth={width} on:click={removeAll} style="height:{height}px;">CLEAR</button>
-<form on:submit|self={addTodo}>
-    <input  class="input" type="text"  bind:value={textField} placeholder="Todo">
+<div id="parent">
+    <button class="clear" bind:clientWidth={width} on:click={removeAll} style="height:{height}px;">CLEAR</button>
+    <form on:submit|self={addTodo}>
+        <input class="input" type="text"  bind:value={textField} placeholder="Todo" style="height:{height}px;">
+    </form>
     <button bind:clientHeight={height} class="add" on:click={addTodo} style="width:{width}px;">➕</button>
-</form>
 </div>
 
 
 <style>
-    div {
+    #parent {
+        width: 100%;
         display: grid;
-        grid-template-columns: 60px 1fr;
+        grid-template-columns: 70px 1fr 70px;
         gap: 10px;
-        grid-template-areas: 'clear input';
-        margin-top: 10px;
-    }
-    form {
-        grid-area: input;
-        display: grid;
-        grid-template-columns: 1fr 50px;
-        gap: 10px;
-        grid-template-areas: 'input add';
-        margin-top: 10px;
-    }
-    .input {
-        border:2px solid #dadada;
-        border-radius:7px;
-        grid-area: input;
-    }
-    .input:focus {
-        outline:rgb(5, 168, 5);
-        border-color: rgb(5, 168, 5);
-    }
-    button {
-        border-radius:7px;
-    }
-
-    .add {
-        grid-area: add;
+        grid-template-areas:
+        'clear input add';
     }
     .clear {
         grid-area: clear;
         background-color: rgb(255, 0, 0);
         color: white;
         font-size: 1em;
-        margin-top: 10px;
-        text-align: center;
     }
+    .input {
+        width: 100%;
+        grid-area: input;
+        border:2px solid #dadada;
+        border-radius:7px;
+    }
+    .input:focus {
+        outline:rgb(5, 168, 5);
+        border-color: rgb(5, 168, 5);
+    }
+    .add {
+        grid-area: add;
+    }
+    button {
+        border-radius:7px;
+    }
+
 </style>
