@@ -13,7 +13,8 @@
 <style>
 	.header {
 		background-color: hotpink;
-		width: 100%;
+		width: 40%;
+		margin-left: 30%;
 		height: 5%;
 		display: flex;
 		justify-content: flex-end;

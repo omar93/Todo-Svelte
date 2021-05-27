@@ -2,8 +2,10 @@
     import { fly } from 'svelte/transition'
     import { createEventDispatcher } from 'svelte'
     export let todo, id, done
+    let changable = true
 
     const dispatch = createEventDispatcher()
+    const toggleChange = () => changable = !changable
     const removeTodo = () => dispatch('remove', id)
     const updateTodo = () => {
         done = !done
@@ -13,10 +15,20 @@
 </script>
 
 <li on:click|stopPropagation={updateTodo} in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}">
-    <span id="status" class="{done ? 'done' : 'hidden'} right-border">✅</span>
-    <span id="text"   class="center right-border">{todo}</span>
+    <span id="status"  class="{done ? 'done' : 'hidden'} right-border">✅</span>
+
+
+
+
+    <span id="text" type="text" on:dblclick={toggleChange} class="{changable ? 'hidden':''}center right-border">{todo}</span>
+
+    <input id="altText" type="text" on:submit={toggleChange} class="{changable ? '': 'hidden'}" placeholder={todo}>
+
+
+
+
     <div id="buttonContainer" >
-        <span id="button" on:click|stopPropagation={removeTodo} class="center">X</span> 
+        <span id="button" on:click|stopPropagation={removeTodo} class="center">X</span>
     </div>
 </li>
 
@@ -45,6 +57,12 @@
         grid-area: text;
         word-break: break-all;
         overflow: hidden;
+        color: black;
+    }
+
+    #altText {
+        grid-area: text;
+        background-color: rgb(255, 252, 86);
     }
 
     #buttonContainer{

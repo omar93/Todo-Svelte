@@ -1,7 +1,8 @@
 <script>
+    import { fly } from 'svelte/transition'
 </script>
 
-<div id="menu">
+<div id="menu" in:fly="{{ y: 200, duration: 2000 }}">
     <p>Settings, signin, profile etc etc</p>
 </div>
 
@@ -9,9 +10,8 @@
     #menu {
         position: absolute;
         background-color: indianred;
-        height: 100%;
-        width: 80%;
-        margin-left: 20%;
-        z-index: 1;
+        height: 95%;
+        width: 20%;
+        margin-left: 80%;
 	}
 </style>

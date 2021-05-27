@@ -3,11 +3,12 @@
 	import Menu from './components/Menu.svelte'
 	import TodoList from './components/TodoList.svelte'
 	import Form from './components/Form.svelte'
+
 	let todoTextLength = 80
 	let isHidden = true
-	const toggleMenu = () => {
-		isHidden = !isHidden
-	}
+
+	const toggleMenu = () => isHidden = !isHidden
+	
 </script>
 <Header on:menu={toggleMenu}></Header>
 <div class="{isHidden ? 'hidden' : ''}">
@@ -25,9 +26,6 @@
 </main>
 
 <style>
-	.hidden {
-		display: none;
-	}
 	main {
 		display: flex;
 		height: 95%;
@@ -35,8 +33,7 @@
 		flex-direction: column;
 		position: absolute;
     	bottom:0px;
-		left:50%;
-		margin-left:-20%;
+		left:30%;
 	}
 	#listContainer {
 		align-self: center;
@@ -55,7 +52,7 @@
 		align-self: center;
 		width: 100%;
 	}
-
+	.hidden {display: none;}
 	@media screen and (max-width: 992px) {
 			main {
 			width: 85%;
