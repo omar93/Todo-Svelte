@@ -4,6 +4,7 @@
 <div id="menu">
     <p>Settings, signin, profile etc etc</p>
 </div>
+
 <style>
     #menu {
         position: absolute;

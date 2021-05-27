@@ -3,6 +3,7 @@
 </script>
 
 <div class="header">
+    <img id="img" src="./profile.jpg" alt="profile">
 	<p class="title">Svelte-Todo-App</p>
 	<div class="menu">
 		<MenuButton on:menu></MenuButton>
@@ -16,6 +17,10 @@
 		height: 5%;
 		display: flex;
 		justify-content: flex-end;
+	}
+	#img {
+		border-radius: 100%;
+		border: white 1px solid;
 	}
 	.menu {
 		margin-right: 10px;

@@ -1,6 +1,7 @@
 <script>
     import Todo from './Todo.svelte'
     import { todoStore } from '../store/todoStore'
+import Todov2 from './Todov2.svelte'
 
     const removeChild = ({detail: id}) => {
         $todoStore = $todoStore.filter(todo => todo.id != id)
@@ -15,6 +16,7 @@
 <ul>
     {#each $todoStore as todo}
         <Todo {...todo} on:remove={removeChild} on:update={updateChild}></Todo>
+        <Todov2></Todov2>
     {/each}
 </ul>
 

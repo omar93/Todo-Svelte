@@ -6,6 +6,7 @@
 
     let textField
     let height
+    let width
 
     const addTodo = e => {
         if(textField.length > todoTextLength) {
@@ -24,10 +25,10 @@
 </script>
 
 <div>
-<button class="clear" on:click={removeAll} style="height:{height}px">CLEAR</button>
+<button class="clear" bind:clientWidth={width} on:click={removeAll} style="height:{height}px;">CLEAR</button>
 <form on:submit|self={addTodo}>
     <input  class="input" type="text"  bind:value={textField} placeholder="Todo">
-    <button bind:clientHeight={height} class="add" on:click={addTodo}>➕</button>
+    <button bind:clientHeight={height} class="add" on:click={addTodo} style="width:{width}px;">➕</button>
 </form>
 </div>
 
