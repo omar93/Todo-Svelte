@@ -14,7 +14,7 @@
 	.header {
 		background-color: hotpink;
 		width: 100%;
-		height: 5%;
+		height: 100%;
 		display: flex;
 		justify-content: flex-end;
 	}
@@ -24,6 +24,7 @@
 	}
 	.menu {
 		margin-right: 10px;
+		z-index: 2;
 	}
 	.title {
 		margin:auto;

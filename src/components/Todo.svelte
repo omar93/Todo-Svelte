@@ -1,34 +1,44 @@
 <script>
     import { fly } from 'svelte/transition'
     import { createEventDispatcher } from 'svelte'
+    import { colorStore } from '../store/colorStore'
     export let todo, id, done
-    let changable = false
-
     const dispatch = createEventDispatcher()
-    const toggleChange = () => changable = !changable
+    let colorValue
+
+    let editable = false
+    let newTodo = todo
+    
+    colorStore.subscribe(col => {
+        colorValue = col
+    })
+
     const removeTodo = () => dispatch('remove', id)
+    const editTodo = () => {
+        editable = !editable
+        if(todo != newTodo) {
+            todo = newTodo
+            dispatch('update', {id,done, todo, colorValue})
+        }
+    }
     const updateTodo = () => {
         done = !done
-        dispatch('update', {id,done, todo})
+        dispatch('update', {id,done, todo, colorValue})
     }
-    
 </script>
 
-<li on:click|stopPropagation={updateTodo} in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}">
-    <span id="status"  class="{done ? 'done' : 'hidden'} right-border">✅</span>
-
-
-
-
-    <span id="text" type="text" on:dblclick={toggleChange} class="{changable ? 'hidden':''}center right-border">{todo}</span>
-
-    <input id="altText" type="text" on:submit={toggleChange} class="{changable ? '': 'hidden'}" placeholder={todo}>
-
-
-
-
+<li in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}" style="background-color:{colorValue};">
+    <span id="status"  class="{done ? 'done' : 'hidden'}">✅</span>
+    {#if editable}
+        <form id="form" on:submit|preventDefault={editTodo}>
+            <input id="altText" type="text" bind:value={newTodo} placeholder={todo}>
+        </form>
+    {:else}
+        <span on:click|stopPropagation={updateTodo} id="text" type="text" class="center">{todo}</span>
+    {/if}
     <div id="buttonContainer" >
-        <span id="button" on:click|stopPropagation={removeTodo} class="center">X</span>
+        <span id="editButton" on:click|stopPropagation={editTodo} class="center">✏️</span>|
+        <span id="removeButton" on:click|stopPropagation={removeTodo} class="center">X</span>
     </div>
 </li>
 
@@ -38,9 +48,8 @@
         height: 50px;
         list-style: none;
         display: grid;
-        grid-template-columns: 50px 1fr 50px;
-        grid-template-areas: 'status text button';
-        background-color: rgb(255, 252, 86);
+        grid-template-columns: 50px 1fr 100px;
+        grid-template-areas: 'status text buttons';
         margin-top: 10px;
         border: 1px solid black;
         border-radius:7px;
@@ -59,35 +68,46 @@
         overflow: hidden;
         color: black;
     }
-
-    #altText {
+    #form {
         grid-area: text;
-        background-color: rgb(255, 252, 86);
+    }
+
+    input[type=text] {
+        background-color: white;
+        width: 100%;
+        margin-top: 6px;
+        text-align: center;
     }
 
     #buttonContainer{
-        grid-area: button;
+        grid-area: buttons;
         display: flex;
-        justify-content: center;
+        justify-content: space-evenly;
         align-items: center;
+        
     }
-
-    #button {
-        width: 55%;
+    #editButton {
+        width: 30%;
         height: 55%;
+        font-size: 1.5em;
+        cursor: pointer;
+        
+    }
+    #removeButton {
+        width: 35%;
+        height: 60%;
         font-size: 1em;
         background-color: crimson;
         border: 1px solid black;
         color: white;
     }
 
-    #button:hover {
+    #removeButton:hover {
         cursor: pointer;
         background-color: rgb(248, 58, 96);
-        
     }
 
-    #button:active {
+    #removeButton:active {
         background-color: crimson;
     }
 
