@@ -1,19 +1,21 @@
 <script>
-	import './service/sw-install'
+	// import './service/sw-install'
 	import Header from './components/Header.svelte'
 	import Menu from './components/Menu.svelte'
 	import TodoList from './components/TodoList.svelte'
 	import Form from './components/Form.svelte'
+	import { backgroundColorStore } from './store/backgroundColorStore'
 
 	let todoTextLength = 80
-	let menuVisable = true
+	let menuVisable = false
 
 	const toggleMenu = () => menuVisable = !menuVisable
+	backgroundColorStore.subscribe(col => window.document.body.style.backgroundColor = col)
 	
 </script>
 
 
-<div id="menuContainer" >
+<div id="menuContainer">
 	{#if menuVisable}
 		<Menu></Menu>
 	{/if}
@@ -36,7 +38,6 @@
 	#headerContainer {
 		height: 5%;
 	}
-
 	#parent {
 		grid-area: main;
 		display: flex;

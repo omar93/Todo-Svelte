@@ -1,8 +1,11 @@
 <script>
+	import { headerColorStore } from '../store/headerColorStore'
     import MenuButton from './MenuButton.svelte'
+	let color
+	headerColorStore.subscribe(col => color = col)
 </script>
 
-<div class="header">
+<div class="header" style="background-color:{color};">
     <img id="img" src="./profile.jpg" alt="profile">
 	<p class="title">Svelte-Todo-App</p>
 	<div class="menu">
@@ -12,7 +15,7 @@
 
 <style>
 	.header {
-		background-color: hotpink;
+		/*background-color: #ff69b4; the original color*/
 		width: 100%;
 		height: 100%;
 		display: flex;

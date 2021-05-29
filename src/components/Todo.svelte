@@ -1,16 +1,20 @@
 <script>
     import { fly } from 'svelte/transition'
     import { createEventDispatcher } from 'svelte'
-    import { colorStore } from '../store/colorStore'
+    import { todoColorStore } from '../store/todoColorStore'
+    import { textColorStore } from '../store/textColorStore'
     export let todo, id, done
     const dispatch = createEventDispatcher()
-    let colorValue
+    let todoColor, textColor
 
     let editable = false
     let newTodo = todo
     
-    colorStore.subscribe(col => {
-        colorValue = col
+    todoColorStore.subscribe(col => {
+        todoColor = col
+    })
+    textColorStore.subscribe(col => {
+        textColor = col
     })
 
     const removeTodo = () => dispatch('remove', id)
@@ -27,14 +31,14 @@
     }
 </script>
 
-<li in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}" style="background-color:{colorValue};">
+<li in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}" style="background-color:{todoColor};">
     <span id="status"  class="{done ? 'done' : 'hidden'}">✅</span>
     {#if editable}
         <form id="form" on:submit|preventDefault={editTodo}>
             <input id="altText" type="text" bind:value={newTodo} placeholder={todo}>
         </form>
     {:else}
-        <span on:click|stopPropagation={updateTodo} id="text" type="text" class="center">{todo}</span>
+        <span on:click|stopPropagation={updateTodo} id="text" type="text" class="center" style="color:{textColor}">{todo}</span>
     {/if}
     <div id="buttonContainer" >
         <span id="editButton" on:click|stopPropagation={editTodo} class="center">✏️</span>|
@@ -66,7 +70,6 @@
         grid-area: text;
         word-break: break-all;
         overflow: hidden;
-        color: black;
     }
     #form {
         grid-area: text;

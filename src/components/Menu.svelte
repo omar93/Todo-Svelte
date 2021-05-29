@@ -1,14 +1,25 @@
 <script>
 	import { fly } from 'svelte/transition'
-	import { colorStore } from '../store/colorStore'
-	let input
-
+	import { backgroundColorStore } from '../store/backgroundColorStore'
+	import { headerColorStore } from '../store/headerColorStore'
+	import { todoColorStore } from '../store/todoColorStore'
+	import { textColorStore } from '../store/textColorStore'
 </script>
+
 <div id="menu" in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: 200, duration: 500 }}">
-	<div>
-		<input bind:this={input} bind:value={$colorStore} on:change={() => colorStore.set(input.value)} type="color">
-		<label for="head">Todo Background Color</label>
-	</div>
+
+	<input bind:value={$backgroundColorStore} type="color">
+	<label for="head">Background Color</label>
+
+	<input bind:value={$headerColorStore} type="color">
+	<label for="head">Header Background Color</label>
+
+	<input bind:value={$todoColorStore} type="color">
+	<label for="head">Todo Background Color</label>
+
+	<input bind:value={$textColorStore} type="color">
+	<label for="head">Todo Text Color</label>
+
 </div>
 
 
@@ -22,16 +33,17 @@
         height: 100%;
 		margin-left: 70%;
 		z-index: 2;
+		display: flex;
+		flex-direction: column;
 	}
 
     @media screen and (max-width: 992px) {
         #menu {
-        position: absolute;
-		position: absolute;
-		width: 100%;
-        height: 100%;
-		margin-left: 0%;
-		z-index: 2;
-	}
+			position: absolute;
+			width: 30%;
+			height: 100%;
+			margin-left: 70%;
+			z-index: 2;
+		}
 	}
 </style>
