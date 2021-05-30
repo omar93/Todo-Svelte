@@ -1,8 +1,8 @@
-const staticVersion = 11
+const staticVersion = 14
 const staticCacheName = `site-static-v${staticVersion}`
-const dynamicVersion = 11
+const dynamicVersion = 14
 const dynamicCache = `site-dynamic-v${dynamicVersion}`
-const assets = ['/','/index.html','/build/bundle.css','/build/bundle.js', '/build/bundle.js.map']
+const assets = ['/','/index.html','/build/bundle.css','/build/bundle.js', '/build/bundle.js.map','/icon.png','profile.jpg']
 
 // install services worker
 // do caching here is a good idéa

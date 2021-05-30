@@ -1,7 +1,6 @@
 import firebase from 'firebase/app'
 import './firebaseinit'
 import 'firebase/firestore'
-import { userStore } from '../store/userStore'
 
 let db = firebase.firestore()
 
@@ -23,7 +22,7 @@ export default class dbhandler {
             photo: user.photoURL
         }
         db.collection('users').doc(user.uid).set(obj)
-        userStore.set(obj)
+        // Check localstorage and add that data to the firestore
     }
 
     async getUserInfo (user) {
@@ -32,6 +31,17 @@ export default class dbhandler {
         userRef.get().then(doc => userObject = doc.data())
         .catch(error => console.log('err: ' + error))
         return userObject
+    }
+
+    async addTodo (todo,uid) {
+        let docRef = db.collection('users').doc(uid).collection('Todos').doc(todo.id)
+        docRef.set({
+            Todo: todo.todo,
+            id: todo.id,
+            status: todo.done
+        })
+        .then(() => console.log('Document added'))
+        .catch(err => console.log('ERROR: ', err))
     }
     
 }

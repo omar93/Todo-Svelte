@@ -1,27 +1,30 @@
 <script>
     import { todoStore } from '../store/todoStore'
     import uuid from 'uuid-v4'
-    
+    import dbHandler  from '../lib/firebaseDB'
+
     export let todoTextLength
+
+    let db = new dbHandler()
 
     let textField
     let height
     let width
 
     const removeAll = () => {todoStore.set([])}
-    const addTodo = e => {
+    const addTodo = async e => {
         if(textField.length > todoTextLength) {
             alert('Max 80 characters & needs to be bigger tha 0 character')
             textField = ''
             return
         }
         e.preventDefault()
-        textField ? todoStore.update(orignalArray => [...orignalArray, {'todo':textField, 'id':new uuid(),'done': false}]) : ''
+        let todo = {'todo':textField, 'id':uuid(),'done': false}
+        textField ? todoStore.update(orignalArray => [...orignalArray, todo]) : ''
+        db.addTodo(todo, localStorage.getItem('uid'))
         textField = ''
     }
 
-    
-    
 </script>
 
 <div id="parent">
@@ -55,6 +58,7 @@
         grid-area: input;
         border:2px solid #dadada;
         border-radius:7px;
+        margin-left: 1px;
     }
     .input:focus {
         outline:rgb(5, 168, 5);
@@ -64,6 +68,7 @@
         grid-area: add;
         background-color: white;
         border: 1px solid black;
+        margin-left: 1.5px;
     }
     button {
         border-radius:7px;

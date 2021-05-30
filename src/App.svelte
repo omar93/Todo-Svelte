@@ -5,7 +5,6 @@
 	import TodoList from './components/TodoList.svelte'
 	import Form from './components/Form.svelte'
 	import { backgroundColorStore } from './store/backgroundColorStore'
-
 	let todoTextLength = 80
 	let menuVisable = false
 
@@ -46,15 +45,7 @@
 		width: 40%;
 		margin: auto;
 	}
-	/*
-	
-	#menuContainer {
-		position: absolute;
-		background-color: blueviolet;
-		width: 100%;
-	}
 
-	*/
 	#listContainer {
 		width: 100%;
 		height: 100%;

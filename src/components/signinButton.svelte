@@ -1,24 +1,6 @@
 <script>
     import firebase from 'firebase/app'
     import 'firebase/auth'
-    import dbhandler from '../lib/firebaseDB'
-    import { userStore } from '../store/userStore'
-
-    let db = new dbhandler()
-
-    firebase.auth().onAuthStateChanged(async Currentuser => {
-        if (Currentuser) {
-            console.log('we in boys')
-            db.checkUser(firebase.auth().currentUser)
-            let obj = {
-                username: Currentuser.displayName,
-                email: Currentuser.email,
-                photoUrl: Currentuser.photoURL,
-                uid: Currentuser
-            }
-            userStore.set(obj)
-        }
-    })
 
     const handleGoogleSignin = () => {
         firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
@@ -26,6 +8,7 @@
     }
 
     const handleSignout = () => {
+        console.log('User signed out')
         firebase.auth().signOut().then(() => {
         }, err => {
             console.error('Sign Out Error', err)

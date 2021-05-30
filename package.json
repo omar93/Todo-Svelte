@@ -21,6 +21,7 @@
   "dependencies": {
     "firebase": "^8.6.3",
     "sirv-cli": "^1.0.0",
-    "uuid-v4": "^0.1.0"
+    "uuid-v4": "^0.1.0",
+    "uuidv4": "^6.2.8"
   }
 }
