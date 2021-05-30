@@ -22,12 +22,12 @@
         editable = !editable
         if(todo != newTodo) {
             todo = newTodo
-            dispatch('update', {id,done, todo, colorValue})
+            dispatch('update', {id,done, todo})
         }
     }
     const updateTodo = () => {
         done = !done
-        dispatch('update', {id,done, todo, colorValue})
+        dispatch('update', {id,done, todo})
     }
 </script>
 
@@ -70,6 +70,7 @@
         grid-area: text;
         word-break: break-all;
         overflow: hidden;
+        font-size: 1.5em;
     }
     #form {
         grid-area: text;
@@ -92,7 +93,7 @@
     #editButton {
         width: 30%;
         height: 55%;
-        font-size: 1.5em;
+        font-size: 1.25em;
         cursor: pointer;
         
     }
@@ -122,4 +123,10 @@
 
     .done {display: flex;}
     .hidden {display: none;}
+
+    @media screen and (max-width: 992px) {
+		#text{
+			font-size: 0.95em;
+		}
+    }
 </style>

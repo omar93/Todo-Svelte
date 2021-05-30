@@ -1,6 +1,6 @@
-const staticVersion = 10
+const staticVersion = 11
 const staticCacheName = `site-static-v${staticVersion}`
-const dynamicVersion = 10
+const dynamicVersion = 11
 const dynamicCache = `site-dynamic-v${dynamicVersion}`
 const assets = ['/','/index.html','/build/bundle.css','/build/bundle.js', '/build/bundle.js.map']
 

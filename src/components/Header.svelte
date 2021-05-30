@@ -23,11 +23,15 @@
 	}
 	#img {
 		border-radius: 100%;
+		height: 85%;
+		margin-top: 3px;
+		margin-left: 3px;
 		border: white 1px solid;
 	}
 	.menu {
 		margin-right: 10px;
 		z-index: 2;
+		margin-top: 7px;
 	}
 	.title {
 		margin:auto;

@@ -1,5 +1,5 @@
 <script>
-	// import './service/sw-install'
+	import './lib/sw-install'
 	import Header from './components/Header.svelte'
 	import Menu from './components/Menu.svelte'
 	import TodoList from './components/TodoList.svelte'
@@ -16,7 +16,7 @@
 
 
 <div id="menuContainer">
-	{#if menuVisable}
+	{#if menuVisable} 
 		<Menu></Menu>
 	{/if}
 </div>
@@ -36,13 +36,13 @@
 
 <style>
 	#headerContainer {
-		height: 5%;
+		height: 6%;
 	}
 	#parent {
 		grid-area: main;
 		display: flex;
 		flex-direction: column;
-		height: 95%;
+		height: 94%;
 		width: 40%;
 		margin: auto;
 	}

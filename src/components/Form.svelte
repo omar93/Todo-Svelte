@@ -8,6 +8,7 @@
     let height
     let width
 
+    const removeAll = () => {todoStore.set([])}
     const addTodo = e => {
         if(textField.length > todoTextLength) {
             alert('Max 80 characters & needs to be bigger tha 0 character')
@@ -19,19 +20,14 @@
         textField = ''
     }
 
-    const removeAll = () => {
-        todoStore.set([])
-    }
-    /*
-    så
-    */
+    
     
 </script>
 
 <div id="parent">
     <button class="clear" bind:clientWidth={width} on:click={removeAll} style="height:{height}px;">CLEAR</button>
     <form on:submit|self={addTodo}>
-        <input class="input" type="text"  bind:value={textField} placeholder="Todo" style="height:{height}px;">
+        <input class="input" type="text" bind:value={textField} placeholder="Todo" style="height:{height}px;">
     </form>
     <button bind:clientHeight={height} class="add" on:click={addTodo} style="width:{width}px;">➕</button>
 </div>
@@ -51,6 +47,8 @@
         background-color: rgb(255, 0, 0);
         color: white;
         font-size: 1em;
+        text-align: center;
+        border: 1px solid black;
     }
     .input {
         width: 100%;
@@ -64,6 +62,8 @@
     }
     .add {
         grid-area: add;
+        background-color: white;
+        border: 1px solid black;
     }
     button {
         border-radius:7px;

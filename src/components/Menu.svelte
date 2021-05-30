@@ -4,10 +4,10 @@
 	import { headerColorStore } from '../store/headerColorStore'
 	import { todoColorStore } from '../store/todoColorStore'
 	import { textColorStore } from '../store/textColorStore'
+	import SigninButton from './signinButton.svelte'
 </script>
 
-<div id="menu" in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: 200, duration: 500 }}">
-
+<div id="menu" in:fly="{{ x: -100, duration: 500 }}" out:fly="{{ x: 0, duration: 500 }}">
 	<input bind:value={$backgroundColorStore} type="color">
 	<label for="head">Background Color</label>
 
@@ -20,9 +20,8 @@
 	<input bind:value={$textColorStore} type="color">
 	<label for="head">Todo Text Color</label>
 
+	<SigninButton></SigninButton>
 </div>
-
-
 
 <style>
     #menu {
