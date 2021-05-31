@@ -4,16 +4,7 @@
 	import { textColorStore } from '../data/textColorStore'
 	import { headerColorStore } from '../data/headerColorStore'
 	import { backgroundColorStore } from '../data/backgroundColorStore'
-
-	import firebase from 'firebase/app'
-    import 'firebase/auth'
-
-    const handleSignout = () => {
-        firebase.auth().signOut().then(() => {
-        }, err => {
-            console.error('Sign Out Error', err)
-        })
-    }
+	import SignoutButton from './SignoutButton.svelte'
 </script>
 
 <div id="menu" in:fly="{{ x: -100, duration: 500 }}" out:fly="{{ x: 0, duration: 500 }}">
@@ -36,7 +27,7 @@
 		<input bind:value={$textColorStore} type="color">
 		<label for="head">Todo Text Color</label>
 	</div>
-	<button on:click={handleSignout}>offline</button>
+	<SignoutButton></SignoutButton>
 </div>
 
 <style>
@@ -50,7 +41,6 @@
 		display: flex;
 		flex-direction: column;
 	}
-
 	.colorContainer {
 		display: flex;
 		border: 1px solid black;
@@ -76,8 +66,8 @@
 		}
 
 		label {
-		margin-left: 50px;
-		margin-top: 8px;
-	}
+			margin-left: 50px;
+			margin-top: 8px;
+		}
 	}
 </style>

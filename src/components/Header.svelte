@@ -5,7 +5,6 @@
 	import MenuButton from './MenuButton.svelte'
 	import { idStore } from '../data/idStore'
 	import { appStore } from '../data/appStore'
-	import { todoStore } from '../data/todoStore'
 	import { headerColorStore } from '../data/headerColorStore'
 
 	let db = new dbhandler()
@@ -20,35 +19,12 @@
 			db.checkUser(firebase.auth().currentUser)
 			url = Currentuser.photoURL
 			localStorage.setItem('uid', Currentuser.uid)
-			if(app === 'online') {
-				let todosRef = firebase.firestore().collection('users').doc(Currentuser.uid).collection('todos')
-				todosRef.orderBy('timestamp').onSnapshot(querySnapshot => {
-					let todoArr = []
-					querySnapshot.forEach(doc => {
-						let todoObj = {
-							'id':doc.data().id,
-							'isDone': doc.data().isDone,
-							'todo': doc.data().todo
-					}
-						todoArr = [...todoArr, todoObj]
-					})
-					todoStore.set(todoArr)
-				})
-			}
+			if(app === 'online') db.ListenToChanges(Currentuser.uid)
 		} else {
 			console.log('You are offline, no syncing availabe')
 			url = './profile.jpg'
 		}
 	})
-
-	function printLocal (firebaseTodos) {
-		console.log(firebaseTodos)
-		let localTodos = localStorage.getItem('Todos')
-		let todoArr = JSON.parse(localTodos)
-		todoArr.forEach(todo => {
-			
-		})
-	}
 
 </script>
 

@@ -1,16 +1,9 @@
 import firebase from 'firebase/app'
 import './firebaseinit'
 import 'firebase/firestore'
+import { todoStore } from '../data/todoStore'
 
 let db = firebase.firestore()
-
-db.enablePersistence()
-    .catch((err) => {
-        if (err.code == 'failed-precondition') {
-            alert('you should only run 1 tab at a time if you want to be able to work offline & online')
-        }
-})
-    
 
 export default class dbhandler {
 
@@ -30,7 +23,6 @@ export default class dbhandler {
             photo: user.photoURL
         }
         db.collection('users').doc(user.uid).set(obj)
-        // Check localstorage and add that data to the firestore
     }
 
     async getUserInfo (user) {
@@ -42,7 +34,6 @@ export default class dbhandler {
     }
 
     async addTodo (todo,uid) {
-        console.log(todo,uid)
         let docRef = db.collection('users').doc(uid).collection('todos').doc(todo.id)
         docRef.set({
             todo: todo.todo,
@@ -50,7 +41,7 @@ export default class dbhandler {
             isDone: todo.isDone,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         })
-        .then(() => console.log('Document added'))
+        .then()
         .catch(err => console.log('ERROR: ', err))
     }
 
@@ -71,4 +62,21 @@ export default class dbhandler {
         .then()
         .catch(err => console.log('ERROR: ', err))
     }
+
+    ListenToChanges(id) {
+        let todosRef = firebase.firestore().collection('users').doc(id).collection('todos')
+        todosRef.orderBy('timestamp').onSnapshot(querySnapshot => {
+            let todoArr = []
+            querySnapshot.forEach(doc => {
+                let todoObj = {
+                    'id':doc.data().id,
+                    'isDone': doc.data().isDone,
+                    'todo': doc.data().todo
+            }
+                todoArr = [...todoArr, todoObj]
+            })
+            todoStore.set(todoArr)
+        })
+    }
+
 }
