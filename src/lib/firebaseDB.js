@@ -4,6 +4,14 @@ import 'firebase/firestore'
 
 let db = firebase.firestore()
 
+db.enablePersistence()
+    .catch((err) => {
+        if (err.code == 'failed-precondition') {
+            alert('you should only run 1 tab at a time if you want to be able to work offline & online')
+        }
+})
+    
+
 export default class dbhandler {
 
     async checkUser (user) {
@@ -34,14 +42,38 @@ export default class dbhandler {
     }
 
     async addTodo (todo,uid) {
-        let docRef = db.collection('users').doc(uid).collection('Todos').doc(todo.id)
+        console.log(todo,uid)
+        let docRef = db.collection('users').doc(uid).collection('todos').doc(todo.id)
         docRef.set({
-            Todo: todo.todo,
+            todo: todo.todo,
             id: todo.id,
             status: todo.done
         })
         .then(() => console.log('Document added'))
         .catch(err => console.log('ERROR: ', err))
     }
-    
+
+    async getTodos (uid) {
+        let todoArr = []
+        let todosRef = db.collection('users').doc(uid).collection('Todos')
+        todosRef.get().then(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                todoArr = [...todoArr,doc.data()]
+            })
+        })
+        .catch(err => console.log('ERROR: ', err))
+        return todoArr
+    }
+
+    updateTodo (todo, uid) {
+        let todosRef = db.collection('users').doc(uid).collection('todos').doc(todo.id)
+        console.log('status: ', todo.done, ' id: ', uid)
+        todosRef.update({
+            'id':todo.id,
+            'status':todo.done,
+            'todo':todo.todo
+        })
+        .then(() => console.log('Document updated!'))
+        .catch(err => console.log('ERROR: ', err))
+    }  
 }

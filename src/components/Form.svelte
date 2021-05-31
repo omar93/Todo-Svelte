@@ -1,5 +1,6 @@
 <script>
-    import { todoStore } from '../store/todoStore'
+    import { appStore } from '../data/appStore'
+    import { todoStore } from '../data/todoStore'
     import uuid from 'uuid-v4'
     import dbHandler  from '../lib/firebaseDB'
 
@@ -21,7 +22,7 @@
         e.preventDefault()
         let todo = {'todo':textField, 'id':uuid(),'done': false}
         textField ? todoStore.update(orignalArray => [...orignalArray, todo]) : ''
-        db.addTodo(todo, localStorage.getItem('uid'))
+        if($appStore === 'online') db.addTodo(todo, localStorage.getItem('uid'))
         textField = ''
     }
 

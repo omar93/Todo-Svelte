@@ -1,7 +1,7 @@
 <script>
     import { fly } from 'svelte/transition'
-    import { todoColorStore } from '../store/todoColorStore'
-    import { textColorStore } from '../store/textColorStore'
+    import { todoColorStore } from '../data/todoColorStore'
+    import { textColorStore } from '../data/textColorStore'
     import { createEventDispatcher } from 'svelte'
 
     import Checkbox from './Checkbox.svelte'

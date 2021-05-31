@@ -1,14 +1,22 @@
 <script>
 	import { fly } from 'svelte/transition'
-	import { backgroundColorStore } from '../store/backgroundColorStore'
-	import { headerColorStore } from '../store/headerColorStore'
-	import { todoColorStore } from '../store/todoColorStore'
-	import { textColorStore } from '../store/textColorStore'
-	import SigninButton from './signinButton.svelte'
+	import { todoColorStore } from '../data/todoColorStore'
+	import { textColorStore } from '../data/textColorStore'
+	import { headerColorStore } from '../data/headerColorStore'
+	import { backgroundColorStore } from '../data/backgroundColorStore'
+
+	import firebase from 'firebase/app'
+    import 'firebase/auth'
+
+    const handleSignout = () => {
+        firebase.auth().signOut().then(() => {
+        }, err => {
+            console.error('Sign Out Error', err)
+        })
+    }
 </script>
 
 <div id="menu" in:fly="{{ x: -100, duration: 500 }}" out:fly="{{ x: 0, duration: 500 }}">
-
 	<div class="colorContainer">
 		<input bind:value={$backgroundColorStore} type="color">
 		<label for="head">Background Color</label>
@@ -28,8 +36,7 @@
 		<input bind:value={$textColorStore} type="color">
 		<label for="head">Todo Text Color</label>
 	</div>
-
-	<SigninButton></SigninButton>
+	<button on:click={handleSignout}>offline</button>
 </div>
 
 <style>

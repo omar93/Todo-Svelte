@@ -3,22 +3,35 @@
 	import 'firebase/auth'
 	import dbhandler from '../lib/firebaseDB'
 	import MenuButton from './MenuButton.svelte'
-	import { headerColorStore } from '../store/headerColorStore'
+	import { idStore } from '../data/idStore'
+	import { headerColorStore } from '../data/headerColorStore'
 
 	let db = new dbhandler()
 	let color,url
 	headerColorStore.subscribe(col => color = col)
 
 	firebase.auth().onAuthStateChanged(async Currentuser => {
-    if (Currentuser) {
-        db.checkUser(firebase.auth().currentUser)
-        url = Currentuser.photoURL
-        localStorage.setItem('uid', Currentuser.uid)
-    } else {
-		console.log('no user in')
-		url = './profile.jpg'
+		if (Currentuser) {
+			idStore.set(Currentuser.uid)
+			db.checkUser(firebase.auth().currentUser)
+			url = Currentuser.photoURL
+			localStorage.setItem('uid', Currentuser.uid)
+			// let firebaseTodos = await db.getTodos(Currentuser.uid)
+			// printLocal(firebaseTodos)
+		} else {
+			console.log('You are offline, no syncing availabe')
+			url = './profile.jpg'
+		}
+	})
+
+	function printLocal (firebaseTodos) {
+		console.log(firebaseTodos)
+		let localTodos = localStorage.getItem('Todos')
+		let todoArr = JSON.parse(localTodos)
+		todoArr.forEach(todo => {
+			
+		})
 	}
-})
 
 </script>
 

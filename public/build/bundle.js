@@ -113,6 +113,9 @@ var app = (function () {
     function space() {
         return text(' ');
     }
+    function empty() {
+        return text('');
+    }
     function listen(node, event, handler, options) {
         node.addEventListener(event, handler, options);
         return () => node.removeEventListener(event, handler, options);
@@ -798,18 +801,71 @@ var app = (function () {
         $inject_state() { }
     }
 
-    if('serviceWorker' in navigator){
-        navigator.serviceWorker.register('/sw.js')
-        .then(reg => {
-            reg.pushManager.subscribe({
-                userVisibleOnly: true
-            })
-            .then(sub => {
-                console.log('sub: ', sub);
-            });
-        })
-        .catch((err) => console.log('service worker not registered', err));
+    const subscriber_queue = [];
+    /**
+     * Create a `Writable` store that allows both updating and reading by subscription.
+     * @param {*=}value initial value
+     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
+     */
+    function writable(value, start = noop$1) {
+        let stop;
+        const subscribers = [];
+        function set(new_value) {
+            if (safe_not_equal(value, new_value)) {
+                value = new_value;
+                if (stop) { // store is ready
+                    const run_queue = !subscriber_queue.length;
+                    for (let i = 0; i < subscribers.length; i += 1) {
+                        const s = subscribers[i];
+                        s[1]();
+                        subscriber_queue.push(s, value);
+                    }
+                    if (run_queue) {
+                        for (let i = 0; i < subscriber_queue.length; i += 2) {
+                            subscriber_queue[i][0](subscriber_queue[i + 1]);
+                        }
+                        subscriber_queue.length = 0;
+                    }
+                }
+            }
+        }
+        function update(fn) {
+            set(fn(value));
+        }
+        function subscribe(run, invalidate = noop$1) {
+            const subscriber = [run, invalidate];
+            subscribers.push(subscriber);
+            if (subscribers.length === 1) {
+                stop = start(set) || noop$1;
+            }
+            run(value);
+            return () => {
+                const index = subscribers.indexOf(subscriber);
+                if (index !== -1) {
+                    subscribers.splice(index, 1);
+                }
+                if (subscribers.length === 0) {
+                    stop();
+                    stop = null;
+                }
+            };
+        }
+        return { set, update, subscribe };
     }
+
+    const persistStore = (key, initial) => {
+      const persist = localStorage.getItem(key);
+      const data = persist ? JSON.parse(persist) : initial;
+      const store = writable(data, () => {
+        const unsubscribe = store.subscribe(value => {
+          localStorage.setItem(key, JSON.stringify(value));
+        });
+        return unsubscribe
+      });
+      return store
+    };
+
+    const appStore = persistStore('App-status', 'new');
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -3563,6 +3619,226 @@ var app = (function () {
     (function(){if("undefined"!==typeof firebase$1&&firebase$1.INTERNAL&&firebase$1.INTERNAL.registerComponent){var a={ActionCodeInfo:{Operation:{EMAIL_SIGNIN:Af,PASSWORD_RESET:"PASSWORD_RESET",RECOVER_EMAIL:"RECOVER_EMAIL",REVERT_SECOND_FACTOR_ADDITION:Cf,VERIFY_AND_CHANGE_EMAIL:Bf,VERIFY_EMAIL:"VERIFY_EMAIL"}},Auth:En,AuthCredential:Bg,Error:t};Z(a,"EmailAuthProvider",Zg,[]);Z(a,"FacebookAuthProvider",Qg,[]);Z(a,"GithubAuthProvider",Sg,[]);Z(a,"GoogleAuthProvider",Ug,[]);Z(a,"TwitterAuthProvider",Wg,[]);
     Z(a,"OAuthProvider",Pg,[V("providerId")]);Z(a,"SAMLAuthProvider",Og,[V("providerId")]);Z(a,"PhoneAuthProvider",lh,[Ao()]);Z(a,"RecaptchaVerifier",to,[X(V(),zo(),"recaptchaContainer"),W("recaptchaParameters",!0),Bo()]);Z(a,"ActionCodeURL",Jf,[]);Z(a,"PhoneMultiFactorGenerator",co,[]);firebase$1.INTERNAL.registerComponent({name:"auth",instanceFactory:function(b){b=b.getProvider("app").getImmediate();return new En(b)},multipleInstances:!1,serviceProps:a,instantiationMode:"LAZY",type:"PUBLIC"});firebase$1.INTERNAL.registerComponent({name:"auth-internal",
     instanceFactory:function(b){b=b.getProvider("auth").getImmediate();return {getUid:q(b.getUid,b),getToken:q(b.nc,b),addAuthTokenListener:q(b.cc,b),removeAuthTokenListener:q(b.Pc,b)}},multipleInstances:!1,instantiationMode:"LAZY",type:"PRIVATE"});firebase$1.registerVersion("@firebase/auth","0.16.6");firebase$1.INTERNAL.extendNamespace({User:Im});}else throw Error("Cannot find the firebase namespace; be sure to include firebase-app.js before this library.");})();}).apply(typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : typeof window !== 'undefined' ? window : {});
+
+    /* src\components\GoogleSigninButton.svelte generated by Svelte v3.38.2 */
+
+    const { console: console_1$3 } = globals;
+    const file$9 = "src\\components\\GoogleSigninButton.svelte";
+
+    function create_fragment$9(ctx) {
+    	let button;
+    	let mounted;
+    	let dispose;
+
+    	const block = {
+    		c: function create() {
+    			button = element("button");
+    			attr_dev(button, "class", "onlineButton svelte-r023l7");
+    			add_location(button, file$9, 12, 0, 363);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, button, anchor);
+
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*handleGoogleSignin*/ ctx[0], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: noop$1,
+    		i: noop$1,
+    		o: noop$1,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(button);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$9.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$9($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("GoogleSigninButton", slots, []);
+
+    	const handleGoogleSignin = () => {
+    		firebase$1.auth().signInWithPopup(new firebase$1.auth.GoogleAuthProvider()).then(() => appStore.set("online")).catch(error => console.error(error));
+    	};
+
+    	const writable_props = [];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1$3.warn(`<GoogleSigninButton> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$capture_state = () => ({ appStore, firebase: firebase$1, handleGoogleSignin });
+    	return [handleGoogleSignin];
+    }
+
+    class GoogleSigninButton extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$9, create_fragment$9, safe_not_equal, {});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "GoogleSigninButton",
+    			options,
+    			id: create_fragment$9.name
+    		});
+    	}
+    }
+
+    /* src\components\Welcome.svelte generated by Svelte v3.38.2 */
+    const file$8 = "src\\components\\Welcome.svelte";
+
+    function create_fragment$8(ctx) {
+    	let div2;
+    	let p0;
+    	let t1;
+    	let div0;
+    	let p1;
+    	let t3;
+    	let googlesignin;
+    	let t4;
+    	let div1;
+    	let p2;
+    	let t6;
+    	let button;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	googlesignin = new GoogleSigninButton({ $$inline: true });
+
+    	const block = {
+    		c: function create() {
+    			div2 = element("div");
+    			p0 = element("p");
+    			p0.textContent = "Welcome";
+    			t1 = space();
+    			div0 = element("div");
+    			p1 = element("p");
+    			p1.textContent = "Sigin to google to synd your todos across your devices";
+    			t3 = space();
+    			create_component(googlesignin.$$.fragment);
+    			t4 = space();
+    			div1 = element("div");
+    			p2 = element("p");
+    			p2.textContent = "contine offline, todos will only be saved locally!";
+    			t6 = space();
+    			button = element("button");
+    			button.textContent = "Continue offline";
+    			attr_dev(p0, "class", "svelte-5978zf");
+    			add_location(p0, file$8, 13, 4, 314);
+    			attr_dev(p1, "class", "svelte-5978zf");
+    			add_location(p1, file$8, 15, 8, 364);
+    			attr_dev(div0, "class", "online svelte-5978zf");
+    			add_location(div0, file$8, 14, 4, 334);
+    			attr_dev(p2, "class", "svelte-5978zf");
+    			add_location(p2, file$8, 19, 8, 513);
+    			attr_dev(button, "class", "offlineButton");
+    			add_location(button, file$8, 20, 8, 580);
+    			attr_dev(div1, "class", "offline svelte-5978zf");
+    			add_location(div1, file$8, 18, 4, 482);
+    			attr_dev(div2, "class", "welcome svelte-5978zf");
+    			add_location(div2, file$8, 12, 0, 287);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div2, anchor);
+    			append_dev(div2, p0);
+    			append_dev(div2, t1);
+    			append_dev(div2, div0);
+    			append_dev(div0, p1);
+    			append_dev(div0, t3);
+    			mount_component(googlesignin, div0, null);
+    			append_dev(div2, t4);
+    			append_dev(div2, div1);
+    			append_dev(div1, p2);
+    			append_dev(div1, t6);
+    			append_dev(div1, button);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*handleOffline*/ ctx[0], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: noop$1,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(googlesignin.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(googlesignin.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div2);
+    			destroy_component(googlesignin);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$8.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$8($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("Welcome", slots, []);
+
+    	const handleOffline = () => {
+    		if (confirm("Are you want to continue offline?")) {
+    			appStore.set("offline");
+    		}
+    	};
+
+    	const writable_props = [];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Welcome> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$capture_state = () => ({ appStore, GoogleSignin: GoogleSigninButton, handleOffline });
+    	return [handleOffline];
+    }
+
+    class Welcome extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$8, create_fragment$8, safe_not_equal, {});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Welcome",
+    			options,
+    			id: create_fragment$8.name
+    		});
+    	}
+    }
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -22781,17 +23057,25 @@ var app = (function () {
     P(firebase$1);
 
     const firebaseConfig = {
-        apiKey: "AIzaSyCAQr3SBx-paxaEplB07r_PD3yYiig48C4",
-        authDomain: "todo-svelte-3ae9c.firebaseapp.com",
-        projectId: "todo-svelte-3ae9c",
-        storageBucket: "todo-svelte-3ae9c.appspot.com",
-        messagingSenderId: "178070889259",
-        appId: "1:178070889259:web:f898590e5609bf058a1b6e"
-      };
+      apiKey: "AIzaSyCAQr3SBx-paxaEplB07r_PD3yYiig48C4",
+      authDomain: "todo-svelte-3ae9c.firebaseapp.com",
+      projectId: "todo-svelte-3ae9c",
+      storageBucket: "todo-svelte-3ae9c.appspot.com",
+      messagingSenderId: "178070889259",
+      appId: "1:178070889259:web:f898590e5609bf058a1b6e"
+    };
 
     firebase$1.initializeApp(firebaseConfig);
 
     let db = firebase$1.firestore();
+
+    db.enablePersistence()
+        .catch((err) => {
+            if (err.code == 'failed-precondition') {
+                alert('you should only run 1 tab at a time if you want to be able to work offline & online');
+            }
+    });
+        
 
     class dbhandler {
 
@@ -22823,22 +23107,46 @@ var app = (function () {
         }
 
         async addTodo (todo,uid) {
-            let docRef = db.collection('users').doc(uid).collection('Todos').doc(todo.id);
+            console.log(todo,uid);
+            let docRef = db.collection('users').doc(uid).collection('todos').doc(todo.id);
             docRef.set({
-                Todo: todo.todo,
+                todo: todo.todo,
                 id: todo.id,
                 status: todo.done
             })
             .then(() => console.log('Document added'))
             .catch(err => console.log('ERROR: ', err));
         }
-        
+
+        async getTodos (uid) {
+            let todoArr = [];
+            let todosRef = db.collection('users').doc(uid).collection('Todos');
+            todosRef.get().then(querySnapshot => {
+                querySnapshot.forEach(doc => {
+                    todoArr = [...todoArr,doc.data()];
+                });
+            })
+            .catch(err => console.log('ERROR: ', err));
+            return todoArr
+        }
+
+        updateTodo (todo, uid) {
+            let todosRef = db.collection('users').doc(uid).collection('todos').doc(todo.id);
+            console.log('status: ', todo.done, ' id: ', uid);
+            todosRef.update({
+                'id':todo.id,
+                'status':todo.done,
+                'todo':todo.todo
+            })
+            .then(() => console.log('Document updated!'))
+            .catch(err => console.log('ERROR: ', err));
+        }  
     }
 
     /* src\components\MenuButton.svelte generated by Svelte v3.38.2 */
-    const file$8 = "src\\components\\MenuButton.svelte";
+    const file$7 = "src\\components\\MenuButton.svelte";
 
-    function create_fragment$8(ctx) {
+    function create_fragment$7(ctx) {
     	let div3;
     	let div0;
     	let t0;
@@ -22858,13 +23166,13 @@ var app = (function () {
     			t1 = space();
     			div2 = element("div");
     			attr_dev(div0, "class", "bar1 svelte-excf63");
-    			add_location(div0, file$8, 11, 2, 284);
+    			add_location(div0, file$7, 11, 2, 284);
     			attr_dev(div1, "class", "bar2 svelte-excf63");
-    			add_location(div1, file$8, 12, 2, 312);
+    			add_location(div1, file$7, 12, 2, 312);
     			attr_dev(div2, "class", "bar3 svelte-excf63");
-    			add_location(div2, file$8, 13, 2, 340);
+    			add_location(div2, file$7, 13, 2, 340);
     			attr_dev(div3, "class", div3_class_value = "" + ((/*active*/ ctx[0] ? "change" : "") + " container" + " svelte-excf63"));
-    			add_location(div3, file$8, 10, 0, 214);
+    			add_location(div3, file$7, 10, 0, 214);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -22898,7 +23206,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$8.name,
+    		id: create_fragment$7.name,
     		type: "component",
     		source: "",
     		ctx
@@ -22907,7 +23215,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$8($$self, $$props, $$invalidate) {
+    function instance$7($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("MenuButton", slots, []);
     	const dispatch = createEventDispatcher();
@@ -22945,89 +23253,27 @@ var app = (function () {
     class MenuButton extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$8, create_fragment$8, safe_not_equal, {});
+    		init(this, options, instance$7, create_fragment$7, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "MenuButton",
     			options,
-    			id: create_fragment$8.name
+    			id: create_fragment$7.name
     		});
     	}
     }
 
-    const subscriber_queue = [];
-    /**
-     * Create a `Writable` store that allows both updating and reading by subscription.
-     * @param {*=}value initial value
-     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
-     */
-    function writable(value, start = noop$1) {
-        let stop;
-        const subscribers = [];
-        function set(new_value) {
-            if (safe_not_equal(value, new_value)) {
-                value = new_value;
-                if (stop) { // store is ready
-                    const run_queue = !subscriber_queue.length;
-                    for (let i = 0; i < subscribers.length; i += 1) {
-                        const s = subscribers[i];
-                        s[1]();
-                        subscriber_queue.push(s, value);
-                    }
-                    if (run_queue) {
-                        for (let i = 0; i < subscriber_queue.length; i += 2) {
-                            subscriber_queue[i][0](subscriber_queue[i + 1]);
-                        }
-                        subscriber_queue.length = 0;
-                    }
-                }
-            }
-        }
-        function update(fn) {
-            set(fn(value));
-        }
-        function subscribe(run, invalidate = noop$1) {
-            const subscriber = [run, invalidate];
-            subscribers.push(subscriber);
-            if (subscribers.length === 1) {
-                stop = start(set) || noop$1;
-            }
-            run(value);
-            return () => {
-                const index = subscribers.indexOf(subscriber);
-                if (index !== -1) {
-                    subscribers.splice(index, 1);
-                }
-                if (subscribers.length === 0) {
-                    stop();
-                    stop = null;
-                }
-            };
-        }
-        return { set, update, subscribe };
-    }
-
-    const persistStore = (key, initial) => {
-      const persist = localStorage.getItem(key);
-      const data = persist ? JSON.parse(persist) : initial;
-      const store = writable(data, () => {
-        const unsubscribe = store.subscribe(value => {
-          localStorage.setItem(key, JSON.stringify(value));
-        });
-        return unsubscribe
-      });
-      return store
-    };
+    const idStore = persistStore('id', '0');
 
     const headerColorStore = persistStore('Header-Color', '#ff69b4');
 
     /* src\components\Header.svelte generated by Svelte v3.38.2 */
 
-    const { console: console_1$1 } = globals;
-    const file$7 = "src\\components\\Header.svelte";
+    const { console: console_1$2 } = globals;
+    const file$6 = "src\\components\\Header.svelte";
 
-    function create_fragment$7(ctx) {
+    function create_fragment$6(ctx) {
     	let div1;
     	let img;
     	let img_src_value;
@@ -23054,14 +23300,14 @@ var app = (function () {
     			if (img.src !== (img_src_value = /*url*/ ctx[1])) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "profile");
     			attr_dev(img, "class", "svelte-20ahth");
-    			add_location(img, file$7, 25, 4, 699);
+    			add_location(img, file$6, 38, 4, 1087);
     			attr_dev(p, "class", "title svelte-20ahth");
-    			add_location(p, file$7, 26, 1, 742);
+    			add_location(p, file$6, 39, 1, 1130);
     			attr_dev(div0, "class", "menu svelte-20ahth");
-    			add_location(div0, file$7, 27, 1, 781);
+    			add_location(div0, file$6, 40, 1, 1169);
     			attr_dev(div1, "class", "header svelte-20ahth");
     			set_style(div1, "background-color", /*color*/ ctx[0]);
-    			add_location(div1, file$7, 24, 0, 639);
+    			add_location(div1, file$6, 37, 0, 1027);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -23102,7 +23348,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$7.name,
+    		id: create_fragment$6.name,
     		type: "component",
     		source: "",
     		ctx
@@ -23111,7 +23357,17 @@ var app = (function () {
     	return block;
     }
 
-    function instance$7($$self, $$props, $$invalidate) {
+    function printLocal(firebaseTodos) {
+    	console.log(firebaseTodos);
+    	let localTodos = localStorage.getItem("Todos");
+    	let todoArr = JSON.parse(localTodos);
+
+    	todoArr.forEach(todo => {
+    		
+    	});
+    }
+
+    function instance$6($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Header", slots, []);
     	let db = new dbhandler();
@@ -23120,11 +23376,13 @@ var app = (function () {
 
     	firebase$1.auth().onAuthStateChanged(async Currentuser => {
     		if (Currentuser) {
+    			idStore.set(Currentuser.uid);
     			db.checkUser(firebase$1.auth().currentUser);
     			$$invalidate(1, url = Currentuser.photoURL);
     			localStorage.setItem("uid", Currentuser.uid);
-    		} else {
-    			console.log("no user in");
+    		} else // printLocal(firebaseTodos)
+    		{
+    			console.log("You are offline, no syncing availabe"); // let firebaseTodos = await db.getTodos(Currentuser.uid)
     			$$invalidate(1, url = "./profile.jpg");
     		}
     	});
@@ -23132,7 +23390,7 @@ var app = (function () {
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1$1.warn(`<Header> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1$2.warn(`<Header> was created with unknown prop '${key}'`);
     	});
 
     	function menu_handler(event) {
@@ -23143,10 +23401,12 @@ var app = (function () {
     		firebase: firebase$1,
     		dbhandler,
     		MenuButton,
+    		idStore,
     		headerColorStore,
     		db,
     		color,
-    		url
+    		url,
+    		printLocal
     	});
 
     	$$self.$inject_state = $$props => {
@@ -23165,13 +23425,13 @@ var app = (function () {
     class Header extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$7, create_fragment$7, safe_not_equal, {});
+    		init(this, options, instance$6, create_fragment$6, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "Header",
     			options,
-    			id: create_fragment$7.name
+    			id: create_fragment$6.name
     		});
     	}
     }
@@ -23196,125 +23456,15 @@ var app = (function () {
         };
     }
 
-    const backgroundColorStore = persistStore('Background-Color', '#00ffff');
-
     const todoColorStore = persistStore('Todo-Color', '#eeff00');
 
     const textColorStore = persistStore('Text-Color', '#fffff');
 
-    /* src\components\signinButton.svelte generated by Svelte v3.38.2 */
-
-    const { console: console_1 } = globals;
-    const file$6 = "src\\components\\signinButton.svelte";
-
-    function create_fragment$6(ctx) {
-    	let button0;
-    	let t1;
-    	let button1;
-    	let mounted;
-    	let dispose;
-
-    	const block = {
-    		c: function create() {
-    			button0 = element("button");
-    			button0.textContent = "Google signin";
-    			t1 = space();
-    			button1 = element("button");
-    			button1.textContent = "Google signout";
-    			add_location(button0, file$6, 18, 0, 484);
-    			add_location(button1, file$6, 22, 0, 556);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, button0, anchor);
-    			insert_dev(target, t1, anchor);
-    			insert_dev(target, button1, anchor);
-
-    			if (!mounted) {
-    				dispose = [
-    					listen_dev(button0, "click", /*handleGoogleSignin*/ ctx[0], false, false, false),
-    					listen_dev(button1, "click", /*handleSignout*/ ctx[1], false, false, false)
-    				];
-
-    				mounted = true;
-    			}
-    		},
-    		p: noop$1,
-    		i: noop$1,
-    		o: noop$1,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(button0);
-    			if (detaching) detach_dev(t1);
-    			if (detaching) detach_dev(button1);
-    			mounted = false;
-    			run_all(dispose);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_fragment$6.name,
-    		type: "component",
-    		source: "",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function instance$6($$self, $$props, $$invalidate) {
-    	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("SigninButton", slots, []);
-
-    	const handleGoogleSignin = () => {
-    		firebase$1.auth().signInWithPopup(new firebase$1.auth.GoogleAuthProvider()).catch(error => console.error(error));
-    	};
-
-    	const handleSignout = () => {
-    		console.log("User signed out");
-
-    		firebase$1.auth().signOut().then(
-    			() => {
-    				
-    			},
-    			err => {
-    				console.error("Sign Out Error", err);
-    			}
-    		);
-    	};
-
-    	const writable_props = [];
-
-    	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<SigninButton> was created with unknown prop '${key}'`);
-    	});
-
-    	$$self.$capture_state = () => ({
-    		firebase: firebase$1,
-    		handleGoogleSignin,
-    		handleSignout
-    	});
-
-    	return [handleGoogleSignin, handleSignout];
-    }
-
-    class SigninButton extends SvelteComponentDev {
-    	constructor(options) {
-    		super(options);
-    		init(this, options, instance$6, create_fragment$6, safe_not_equal, {});
-
-    		dispatch_dev("SvelteRegisterComponent", {
-    			component: this,
-    			tagName: "SigninButton",
-    			options,
-    			id: create_fragment$6.name
-    		});
-    	}
-    }
+    const backgroundColorStore = persistStore('Background-Color', '#00ffff');
 
     /* src\components\Menu.svelte generated by Svelte v3.38.2 */
+
+    const { console: console_1$1 } = globals;
     const file$5 = "src\\components\\Menu.svelte";
 
     function create_fragment$5(ctx) {
@@ -23339,13 +23489,12 @@ var app = (function () {
     	let t9;
     	let label3;
     	let t11;
-    	let signinbutton;
+    	let button;
     	let div4_intro;
     	let div4_outro;
     	let current;
     	let mounted;
     	let dispose;
-    	signinbutton = new SigninButton({ $$inline: true });
 
     	const block = {
     		c: function create() {
@@ -23374,42 +23523,44 @@ var app = (function () {
     			label3 = element("label");
     			label3.textContent = "Todo Text Color";
     			t11 = space();
-    			create_component(signinbutton.$$.fragment);
+    			button = element("button");
+    			button.textContent = "offline";
     			attr_dev(input0, "type", "color");
     			attr_dev(input0, "class", "svelte-75w412");
-    			add_location(input0, file$5, 12, 2, 494);
+    			add_location(input0, file$5, 20, 2, 680);
     			attr_dev(label0, "for", "head");
     			attr_dev(label0, "class", "svelte-75w412");
-    			add_location(label0, file$5, 13, 2, 553);
+    			add_location(label0, file$5, 21, 2, 739);
     			attr_dev(div0, "class", "colorContainer svelte-75w412");
-    			add_location(div0, file$5, 11, 1, 462);
+    			add_location(div0, file$5, 19, 1, 648);
     			attr_dev(input1, "type", "color");
     			attr_dev(input1, "class", "svelte-75w412");
-    			add_location(input1, file$5, 17, 2, 643);
+    			add_location(input1, file$5, 25, 2, 829);
     			attr_dev(label1, "for", "head");
     			attr_dev(label1, "class", "svelte-75w412");
-    			add_location(label1, file$5, 18, 2, 698);
+    			add_location(label1, file$5, 26, 2, 884);
     			attr_dev(div1, "class", "colorContainer svelte-75w412");
-    			add_location(div1, file$5, 16, 1, 611);
+    			add_location(div1, file$5, 24, 1, 797);
     			attr_dev(input2, "type", "color");
     			attr_dev(input2, "class", "svelte-75w412");
-    			add_location(input2, file$5, 22, 2, 795);
+    			add_location(input2, file$5, 30, 2, 981);
     			attr_dev(label2, "for", "head");
     			attr_dev(label2, "class", "svelte-75w412");
-    			add_location(label2, file$5, 23, 2, 848);
+    			add_location(label2, file$5, 31, 2, 1034);
     			attr_dev(div2, "class", "colorContainer svelte-75w412");
-    			add_location(div2, file$5, 21, 1, 763);
+    			add_location(div2, file$5, 29, 1, 949);
     			attr_dev(input3, "type", "color");
     			attr_dev(input3, "class", "svelte-75w412");
-    			add_location(input3, file$5, 27, 2, 943);
+    			add_location(input3, file$5, 35, 2, 1129);
     			attr_dev(label3, "for", "head");
     			attr_dev(label3, "class", "svelte-75w412");
-    			add_location(label3, file$5, 28, 2, 996);
+    			add_location(label3, file$5, 36, 2, 1182);
     			attr_dev(div3, "class", "colorContainer svelte-75w412");
-    			add_location(div3, file$5, 26, 1, 911);
+    			add_location(div3, file$5, 34, 1, 1097);
+    			add_location(button, file$5, 38, 1, 1235);
     			attr_dev(div4, "id", "menu");
     			attr_dev(div4, "class", "svelte-75w412");
-    			add_location(div4, file$5, 9, 0, 368);
+    			add_location(div4, file$5, 18, 0, 556);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -23440,15 +23591,16 @@ var app = (function () {
     			append_dev(div3, t9);
     			append_dev(div3, label3);
     			append_dev(div4, t11);
-    			mount_component(signinbutton, div4, null);
+    			append_dev(div4, button);
     			current = true;
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[4]),
-    					listen_dev(input1, "input", /*input1_input_handler*/ ctx[5]),
-    					listen_dev(input2, "input", /*input2_input_handler*/ ctx[6]),
-    					listen_dev(input3, "input", /*input3_input_handler*/ ctx[7])
+    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[5]),
+    					listen_dev(input1, "input", /*input1_input_handler*/ ctx[6]),
+    					listen_dev(input2, "input", /*input2_input_handler*/ ctx[7]),
+    					listen_dev(input3, "input", /*input3_input_handler*/ ctx[8]),
+    					listen_dev(button, "click", /*handleSignout*/ ctx[4], false, false, false)
     				];
 
     				mounted = true;
@@ -23473,7 +23625,6 @@ var app = (function () {
     		},
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(signinbutton.$$.fragment, local);
 
     			add_render_callback(() => {
     				if (div4_outro) div4_outro.end(1);
@@ -23484,14 +23635,12 @@ var app = (function () {
     			current = true;
     		},
     		o: function outro(local) {
-    			transition_out(signinbutton.$$.fragment, local);
     			if (div4_intro) div4_intro.invalidate();
     			div4_outro = create_out_transition(div4, fly, { x: 0, duration: 500 });
     			current = false;
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div4);
-    			destroy_component(signinbutton);
     			if (detaching && div4_outro) div4_outro.end();
     			mounted = false;
     			run_all(dispose);
@@ -23524,10 +23673,22 @@ var app = (function () {
     	component_subscribe($$self, textColorStore, $$value => $$invalidate(3, $textColorStore = $$value));
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Menu", slots, []);
+
+    	const handleSignout = () => {
+    		firebase$1.auth().signOut().then(
+    			() => {
+    				
+    			},
+    			err => {
+    				console.error("Sign Out Error", err);
+    			}
+    		);
+    	};
+
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Menu> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1$1.warn(`<Menu> was created with unknown prop '${key}'`);
     	});
 
     	function input0_input_handler() {
@@ -23552,11 +23713,12 @@ var app = (function () {
 
     	$$self.$capture_state = () => ({
     		fly,
-    		backgroundColorStore,
-    		headerColorStore,
     		todoColorStore,
     		textColorStore,
-    		SigninButton,
+    		headerColorStore,
+    		backgroundColorStore,
+    		firebase: firebase$1,
+    		handleSignout,
     		$backgroundColorStore,
     		$headerColorStore,
     		$todoColorStore,
@@ -23568,6 +23730,7 @@ var app = (function () {
     		$headerColorStore,
     		$todoColorStore,
     		$textColorStore,
+    		handleSignout,
     		input0_input_handler,
     		input1_input_handler,
     		input2_input_handler,
@@ -23594,7 +23757,7 @@ var app = (function () {
     const file$4 = "src\\components\\Checkbox.svelte";
 
     // (8:2) {:else}
-    function create_else_block$1(ctx) {
+    function create_else_block$2(ctx) {
     	let div;
 
     	const block = {
@@ -23613,7 +23776,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_else_block$1.name,
+    		id: create_else_block$2.name,
     		type: "else",
     		source: "(8:2) {:else}",
     		ctx
@@ -23662,7 +23825,7 @@ var app = (function () {
 
     	function select_block_type(ctx, dirty) {
     		if (/*checked*/ ctx[0]) return create_if_block$2;
-    		return create_else_block$1;
+    		return create_else_block$2;
     	}
 
     	let current_block_type = select_block_type(ctx);
@@ -23765,7 +23928,7 @@ var app = (function () {
     const file$3 = "src\\components\\Todo.svelte";
 
     // (45:4) {:else}
-    function create_else_block(ctx) {
+    function create_else_block$1(ctx) {
     	let span;
     	let t;
     	let span_class_value;
@@ -23780,7 +23943,7 @@ var app = (function () {
     			attr_dev(span, "type", "text");
     			attr_dev(span, "class", span_class_value = " " + (/*done*/ ctx[1] ? "done" : "") + " center" + " svelte-19ae07i");
     			set_style(span, "color", /*textColor*/ ctx[3]);
-    			add_location(span, file$3, 45, 8, 1364);
+    			add_location(span, file$3, 45, 8, 1362);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, span, anchor);
@@ -23811,7 +23974,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_else_block.name,
+    		id: create_else_block$1.name,
     		type: "else",
     		source: "(45:4) {:else}",
     		ctx
@@ -23835,10 +23998,10 @@ var app = (function () {
     			attr_dev(input, "type", "text");
     			attr_dev(input, "placeholder", /*todo*/ ctx[0]);
     			attr_dev(input, "class", "svelte-19ae07i");
-    			add_location(input, file$3, 42, 12, 1252);
+    			add_location(input, file$3, 42, 12, 1250);
     			attr_dev(form, "id", "form");
     			attr_dev(form, "class", "svelte-19ae07i");
-    			add_location(form, file$3, 41, 8, 1186);
+    			add_location(form, file$3, 41, 8, 1184);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, form, anchor);
@@ -23913,7 +24076,7 @@ var app = (function () {
 
     	function select_block_type(ctx, dirty) {
     		if (/*editable*/ ctx[4]) return create_if_block$1;
-    		return create_else_block;
+    		return create_else_block$1;
     	}
 
     	let current_block_type = select_block_type(ctx);
@@ -23935,19 +24098,19 @@ var app = (function () {
     			span2.textContent = "X";
     			attr_dev(span0, "id", "status");
     			attr_dev(span0, "class", "svelte-19ae07i");
-    			add_location(span0, file$3, 37, 4, 1074);
+    			add_location(span0, file$3, 37, 4, 1072);
     			attr_dev(span1, "id", "editButton");
     			attr_dev(span1, "class", "center svelte-19ae07i");
-    			add_location(span1, file$3, 48, 8, 1560);
+    			add_location(span1, file$3, 48, 8, 1558);
     			attr_dev(span2, "id", "removeButton");
     			attr_dev(span2, "class", "center svelte-19ae07i");
-    			add_location(span2, file$3, 49, 8, 1652);
+    			add_location(span2, file$3, 49, 8, 1650);
     			attr_dev(div, "id", "buttonContainer");
     			attr_dev(div, "class", "svelte-19ae07i");
-    			add_location(div, file$3, 47, 4, 1523);
+    			add_location(div, file$3, 47, 4, 1521);
     			set_style(li, "background-color", /*todoColor*/ ctx[2]);
     			attr_dev(li, "class", "svelte-19ae07i");
-    			add_location(li, file$3, 36, 0, 950);
+    			add_location(li, file$3, 36, 0, 948);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -24200,19 +24363,21 @@ var app = (function () {
     const todoStore = persistStore('Todos', []);
 
     /* src\components\TodoList.svelte generated by Svelte v3.38.2 */
+
+    const { console: console_1 } = globals;
     const file$2 = "src\\components\\TodoList.svelte";
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[3] = list[i];
+    	child_ctx[6] = list[i];
     	return child_ctx;
     }
 
-    // (16:4) {#each $todoStore as todo}
+    // (27:4) {#each $todoStore as todo}
     function create_each_block(ctx) {
     	let todo;
     	let current;
-    	const todo_spread_levels = [/*todo*/ ctx[3]];
+    	const todo_spread_levels = [/*todo*/ ctx[6]];
     	let todo_props = {};
 
     	for (let i = 0; i < todo_spread_levels.length; i += 1) {
@@ -24233,7 +24398,7 @@ var app = (function () {
     		},
     		p: function update(ctx, dirty) {
     			const todo_changes = (dirty & /*$todoStore*/ 1)
-    			? get_spread_update(todo_spread_levels, [get_spread_object(/*todo*/ ctx[3])])
+    			? get_spread_update(todo_spread_levels, [get_spread_object(/*todo*/ ctx[6])])
     			: {};
 
     			todo.$set(todo_changes);
@@ -24256,7 +24421,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(16:4) {#each $todoStore as todo}",
+    		source: "(27:4) {#each $todoStore as todo}",
     		ctx
     	});
 
@@ -24287,7 +24452,7 @@ var app = (function () {
     			}
 
     			attr_dev(ul, "class", "svelte-1188gtg");
-    			add_location(ul, file$2, 14, 0, 390);
+    			add_location(ul, file$2, 25, 0, 749);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -24367,10 +24532,16 @@ var app = (function () {
 
     function instance$2($$self, $$props, $$invalidate) {
     	let $todoStore;
+    	let $appStore;
     	validate_store(todoStore, "todoStore");
     	component_subscribe($$self, todoStore, $$value => $$invalidate(0, $todoStore = $$value));
+    	validate_store(appStore, "appStore");
+    	component_subscribe($$self, appStore, $$value => $$invalidate(4, $appStore = $$value));
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("TodoList", slots, []);
+    	let db = new dbhandler();
+    	let id;
+    	idStore.subscribe(data => id = data);
 
     	const removeChild = ({ detail: id }) => {
     		set_store_value(todoStore, $todoStore = $todoStore.filter(todo => todo.id != id), $todoStore);
@@ -24379,21 +24550,41 @@ var app = (function () {
     	const updateChild = ({ detail }) => {
     		const index = $todoStore.findIndex(item => item.id === detail.id);
     		set_store_value(todoStore, $todoStore[index] = detail, $todoStore);
+
+    		if ($appStore === "online") {
+    			console.log(detail);
+    			db.updateTodo(detail, id);
+    		}
     	};
 
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<TodoList> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<TodoList> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$capture_state = () => ({
     		Todo,
+    		dbhandler,
+    		appStore,
     		todoStore,
+    		idStore,
+    		db,
+    		id,
     		removeChild,
     		updateChild,
-    		$todoStore
+    		$todoStore,
+    		$appStore
     	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("db" in $$props) db = $$props.db;
+    		if ("id" in $$props) id = $$props.id;
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
 
     	return [$todoStore, removeChild, updateChild];
     }
@@ -24478,20 +24669,20 @@ var app = (function () {
     			attr_dev(button0, "class", "clear svelte-z2rerp");
     			set_style(button0, "height", /*height*/ ctx[1] + "px");
     			add_render_callback(() => /*button0_elementresize_handler*/ ctx[6].call(button0));
-    			add_location(button0, file$1, 30, 4, 831);
+    			add_location(button0, file$1, 31, 4, 906);
     			attr_dev(input, "class", "input svelte-z2rerp");
     			attr_dev(input, "type", "text");
     			attr_dev(input, "placeholder", "Todo");
     			set_style(input, "height", /*height*/ ctx[1] + "px");
-    			add_location(input, file$1, 32, 8, 987);
-    			add_location(form, file$1, 31, 4, 946);
+    			add_location(input, file$1, 33, 8, 1062);
+    			add_location(form, file$1, 32, 4, 1021);
     			attr_dev(button1, "class", "add svelte-z2rerp");
     			set_style(button1, "width", /*width*/ ctx[2] + "px");
     			add_render_callback(() => /*button1_elementresize_handler*/ ctx[8].call(button1));
-    			add_location(button1, file$1, 34, 4, 1108);
+    			add_location(button1, file$1, 35, 4, 1183);
     			attr_dev(div, "id", "parent");
     			attr_dev(div, "class", "svelte-z2rerp");
-    			add_location(div, file$1, 29, 0, 808);
+    			add_location(div, file$1, 30, 0, 883);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -24561,6 +24752,9 @@ var app = (function () {
     }
 
     function instance$1($$self, $$props, $$invalidate) {
+    	let $appStore;
+    	validate_store(appStore, "appStore");
+    	component_subscribe($$self, appStore, $$value => $$invalidate(9, $appStore = $$value));
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Form", slots, []);
     	let { todoTextLength } = $$props;
@@ -24592,7 +24786,7 @@ var app = (function () {
     		? todoStore.update(orignalArray => [...orignalArray, todo])
     		: "";
 
-    		db.addTodo(todo, localStorage.getItem("uid"));
+    		if ($appStore === "online") db.addTodo(todo, localStorage.getItem("uid"));
     		$$invalidate(0, textField = "");
     	};
 
@@ -24622,6 +24816,7 @@ var app = (function () {
     	};
 
     	$$self.$capture_state = () => ({
+    		appStore,
     		todoStore,
     		uuid: uuidV4,
     		dbHandler: dbhandler,
@@ -24631,7 +24826,8 @@ var app = (function () {
     		height,
     		width,
     		removeAll,
-    		addTodo
+    		addTodo,
+    		$appStore
     	});
 
     	$$self.$inject_state = $$props => {
@@ -24691,46 +24887,8 @@ var app = (function () {
     /* src\App.svelte generated by Svelte v3.38.2 */
     const file = "src\\App.svelte";
 
-    // (18:1) {#if menuVisable}
-    function create_if_block(ctx) {
-    	let menu;
-    	let current;
-    	menu = new Menu({ $$inline: true });
-
-    	const block = {
-    		c: function create() {
-    			create_component(menu.$$.fragment);
-    		},
-    		m: function mount(target, anchor) {
-    			mount_component(menu, target, anchor);
-    			current = true;
-    		},
-    		i: function intro(local) {
-    			if (current) return;
-    			transition_in(menu.$$.fragment, local);
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			transition_out(menu.$$.fragment, local);
-    			current = false;
-    		},
-    		d: function destroy(detaching) {
-    			destroy_component(menu, detaching);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block.name,
-    		type: "if",
-    		source: "(18:1) {#if menuVisable}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function create_fragment(ctx) {
+    // (27:0) {:else}
+    function create_else_block(ctx) {
     	let div0;
     	let t0;
     	let div1;
@@ -24743,14 +24901,14 @@ var app = (function () {
     	let div3;
     	let form;
     	let current;
-    	let if_block = /*menuVisable*/ ctx[0] && create_if_block(ctx);
+    	let if_block = /*menuVisable*/ ctx[0] && create_if_block_1(ctx);
     	header = new Header({ $$inline: true });
-    	header.$on("menu", /*toggleMenu*/ ctx[2]);
+    	header.$on("menu", /*toggleMenu*/ ctx[3]);
     	todolist = new TodoList({ $$inline: true });
 
     	form = new Form({
     			props: {
-    				todoTextLength: /*todoTextLength*/ ctx[1]
+    				todoTextLength: /*todoTextLength*/ ctx[2]
     			},
     			$$inline: true
     		});
@@ -24770,22 +24928,19 @@ var app = (function () {
     			div3 = element("div");
     			create_component(form.$$.fragment);
     			attr_dev(div0, "id", "menuContainer");
-    			add_location(div0, file, 16, 0, 504);
+    			add_location(div0, file, 28, 0, 748);
     			attr_dev(div1, "id", "headerContainer");
     			attr_dev(div1, "class", "svelte-16zehu3");
-    			add_location(div1, file, 21, 0, 579);
+    			add_location(div1, file, 33, 0, 823);
     			attr_dev(div2, "id", "listContainer");
     			attr_dev(div2, "class", "svelte-16zehu3");
-    			add_location(div2, file, 25, 1, 672);
+    			add_location(div2, file, 37, 1, 916);
     			attr_dev(div3, "id", "formContainer");
     			attr_dev(div3, "class", "svelte-16zehu3");
-    			add_location(div3, file, 29, 1, 731);
+    			add_location(div3, file, 41, 1, 975);
     			attr_dev(div4, "id", "parent");
     			attr_dev(div4, "class", "svelte-16zehu3");
-    			add_location(div4, file, 24, 0, 653);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    			add_location(div4, file, 36, 0, 897);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div0, anchor);
@@ -24802,14 +24957,14 @@ var app = (function () {
     			mount_component(form, div3, null);
     			current = true;
     		},
-    		p: function update(ctx, [dirty]) {
+    		p: function update(ctx, dirty) {
     			if (/*menuVisable*/ ctx[0]) {
     				if (if_block) {
     					if (dirty & /*menuVisable*/ 1) {
     						transition_in(if_block, 1);
     					}
     				} else {
-    					if_block = create_if_block(ctx);
+    					if_block = create_if_block_1(ctx);
     					if_block.c();
     					transition_in(if_block, 1);
     					if_block.m(div0, null);
@@ -24854,6 +25009,167 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
+    		id: create_else_block.name,
+    		type: "else",
+    		source: "(27:0) {:else}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (25:0) {#if choice === 'new'}
+    function create_if_block(ctx) {
+    	let welcome;
+    	let current;
+    	welcome = new Welcome({ $$inline: true });
+
+    	const block = {
+    		c: function create() {
+    			create_component(welcome.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(welcome, target, anchor);
+    			current = true;
+    		},
+    		p: noop$1,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(welcome.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(welcome.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(welcome, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block.name,
+    		type: "if",
+    		source: "(25:0) {#if choice === 'new'}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (30:1) {#if menuVisable}
+    function create_if_block_1(ctx) {
+    	let menu;
+    	let current;
+    	menu = new Menu({ $$inline: true });
+
+    	const block = {
+    		c: function create() {
+    			create_component(menu.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(menu, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(menu.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(menu.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(menu, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_1.name,
+    		type: "if",
+    		source: "(30:1) {#if menuVisable}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment(ctx) {
+    	let current_block_type_index;
+    	let if_block;
+    	let if_block_anchor;
+    	let current;
+    	const if_block_creators = [create_if_block, create_else_block];
+    	const if_blocks = [];
+
+    	function select_block_type(ctx, dirty) {
+    		if (/*choice*/ ctx[1] === "new") return 0;
+    		return 1;
+    	}
+
+    	current_block_type_index = select_block_type(ctx);
+    	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+
+    	const block = {
+    		c: function create() {
+    			if_block.c();
+    			if_block_anchor = empty();
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			if_blocks[current_block_type_index].m(target, anchor);
+    			insert_dev(target, if_block_anchor, anchor);
+    			current = true;
+    		},
+    		p: function update(ctx, [dirty]) {
+    			let previous_block_index = current_block_type_index;
+    			current_block_type_index = select_block_type(ctx);
+
+    			if (current_block_type_index === previous_block_index) {
+    				if_blocks[current_block_type_index].p(ctx, dirty);
+    			} else {
+    				group_outros();
+
+    				transition_out(if_blocks[previous_block_index], 1, 1, () => {
+    					if_blocks[previous_block_index] = null;
+    				});
+
+    				check_outros();
+    				if_block = if_blocks[current_block_type_index];
+
+    				if (!if_block) {
+    					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+    					if_block.c();
+    				} else {
+    					if_block.p(ctx, dirty);
+    				}
+
+    				transition_in(if_block, 1);
+    				if_block.m(if_block_anchor.parentNode, if_block_anchor);
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(if_block);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if_blocks[current_block_type_index].d(detaching);
+    			if (detaching) detach_dev(if_block_anchor);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
     		id: create_fragment.name,
     		type: "component",
     		source: "",
@@ -24868,6 +25184,8 @@ var app = (function () {
     	validate_slots("App", slots, []);
     	let todoTextLength = 80;
     	let menuVisable = false;
+    	let choice;
+    	appStore.subscribe(data => $$invalidate(1, choice = data));
     	const toggleMenu = () => $$invalidate(0, menuVisable = !menuVisable);
     	backgroundColorStore.subscribe(col => window.document.body.style.backgroundColor = col);
     	const writable_props = [];
@@ -24877,26 +25195,30 @@ var app = (function () {
     	});
 
     	$$self.$capture_state = () => ({
+    		Welcome,
     		Header,
     		Menu,
     		TodoList,
     		Form,
+    		appStore,
     		backgroundColorStore,
     		todoTextLength,
     		menuVisable,
+    		choice,
     		toggleMenu
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("todoTextLength" in $$props) $$invalidate(1, todoTextLength = $$props.todoTextLength);
+    		if ("todoTextLength" in $$props) $$invalidate(2, todoTextLength = $$props.todoTextLength);
     		if ("menuVisable" in $$props) $$invalidate(0, menuVisable = $$props.menuVisable);
+    		if ("choice" in $$props) $$invalidate(1, choice = $$props.choice);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [menuVisable, todoTextLength, toggleMenu];
+    	return [menuVisable, choice, todoTextLength, toggleMenu];
     }
 
     class App extends SvelteComponentDev {

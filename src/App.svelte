@@ -1,18 +1,30 @@
 <script>
 	import './lib/sw-install'
+	import './components/Welcome.svelte'
+
+	import Welcome from './components/Welcome.svelte'
 	import Header from './components/Header.svelte'
 	import Menu from './components/Menu.svelte'
 	import TodoList from './components/TodoList.svelte'
 	import Form from './components/Form.svelte'
-	import { backgroundColorStore } from './store/backgroundColorStore'
+	
+	import { appStore } from './data/appStore'
+	import { backgroundColorStore } from './data/backgroundColorStore'
+	
+
 	let todoTextLength = 80
 	let menuVisable = false
+	let choice
 
+	appStore.subscribe(data => choice = data)
 	const toggleMenu = () => menuVisable = !menuVisable
 	backgroundColorStore.subscribe(col => window.document.body.style.backgroundColor = col)
 	
 </script>
 
+{#if choice === 'new'}
+<Welcome></Welcome>
+{:else}
 
 <div id="menuContainer">
 	{#if menuVisable} 
@@ -32,6 +44,7 @@
 	</div>
 </div>
 
+{/if}
 
 <style>
 	#headerContainer {
