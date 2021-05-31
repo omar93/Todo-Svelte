@@ -22,10 +22,15 @@
 			localStorage.setItem('uid', Currentuser.uid)
 			if(app === 'online') {
 				let todosRef = firebase.firestore().collection('users').doc(Currentuser.uid).collection('todos')
-				todosRef.onSnapshot(querySnapshot => {
+				todosRef.orderBy('timestamp').onSnapshot(querySnapshot => {
 					let todoArr = []
 					querySnapshot.forEach(doc => {
-						todoArr = [...todoArr, doc.data()]
+						let todoObj = {
+							'id':doc.data().id,
+							'isDone': doc.data().isDone,
+							'todo': doc.data().todo
+					}
+						todoArr = [...todoArr, todoObj]
 					})
 					todoStore.set(todoArr)
 				})

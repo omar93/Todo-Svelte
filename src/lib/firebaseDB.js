@@ -47,7 +47,8 @@ export default class dbhandler {
         docRef.set({
             todo: todo.todo,
             id: todo.id,
-            isDone: todo.isDone
+            isDone: todo.isDone,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         })
         .then(() => console.log('Document added'))
         .catch(err => console.log('ERROR: ', err))

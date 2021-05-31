@@ -23112,7 +23112,8 @@ var app = (function () {
             docRef.set({
                 todo: todo.todo,
                 id: todo.id,
-                isDone: todo.isDone
+                isDone: todo.isDone,
+                timestamp: firebase$1.firestore.FieldValue.serverTimestamp()
             })
             .then(() => console.log('Document added'))
             .catch(err => console.log('ERROR: ', err));
@@ -23296,14 +23297,14 @@ var app = (function () {
     			if (img.src !== (img_src_value = /*url*/ ctx[1])) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "profile");
     			attr_dev(img, "class", "svelte-20ahth");
-    			add_location(img, file$6, 50, 4, 1460);
+    			add_location(img, file$6, 55, 4, 1606);
     			attr_dev(p, "class", "title svelte-20ahth");
-    			add_location(p, file$6, 51, 1, 1503);
+    			add_location(p, file$6, 56, 1, 1649);
     			attr_dev(div0, "class", "menu svelte-20ahth");
-    			add_location(div0, file$6, 52, 1, 1542);
+    			add_location(div0, file$6, 57, 1, 1688);
     			attr_dev(div1, "class", "header svelte-20ahth");
     			set_style(div1, "background-color", /*color*/ ctx[0]);
-    			add_location(div1, file$6, 49, 0, 1400);
+    			add_location(div1, file$6, 54, 0, 1546);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -23381,11 +23382,17 @@ var app = (function () {
     			if (app === "online") {
     				let todosRef = firebase$1.firestore().collection("users").doc(Currentuser.uid).collection("todos");
 
-    				todosRef.onSnapshot(querySnapshot => {
+    				todosRef.orderBy("timestamp").onSnapshot(querySnapshot => {
     					let todoArr = [];
 
     					querySnapshot.forEach(doc => {
-    						todoArr = [...todoArr, doc.data()];
+    						let todoObj = {
+    							"id": doc.data().id,
+    							"isDone": doc.data().isDone,
+    							"todo": doc.data().todo
+    						};
+
+    						todoArr = [...todoArr, todoObj];
     					});
 
     					todoStore.set(todoArr);
