@@ -1,6 +1,5 @@
 <script>
 	import './lib/sw-install'
-	import './components/Welcome.svelte'
 
 	import Welcome from './components/Welcome.svelte'
 	import Header from './components/Header.svelte'
@@ -51,7 +50,6 @@
 		height: 6%;
 	}
 	#parent {
-		grid-area: main;
 		display: flex;
 		flex-direction: column;
 		height: 94%;

@@ -66,7 +66,6 @@
 		}
 
 		label {
-			margin-left: 50px;
 			margin-top: 8px;
 		}
 	}

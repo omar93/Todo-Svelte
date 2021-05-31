@@ -18,7 +18,7 @@
 </script>
 
 {#if appStatus === 'offline'}
-    <GoogleSigninButton></GoogleSigninButton>
+    <GoogleSigninButton large={false}></GoogleSigninButton>
 {:else if appStatus === 'online'}
     <button class="onlineButton" on:click={handleSignout}>Logout</button>
 {/if}

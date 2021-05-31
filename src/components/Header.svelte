@@ -40,7 +40,7 @@
 	.header {
 		/*background-color: #ff69b4; the original color*/
 		width: 100%;
-		height: 60px;
+		height: 100%;
 		display: flex;
 		justify-content: flex-end;
 	}
@@ -48,7 +48,7 @@
 		border-radius: 100%;
 		height: 50px;
 		width: 50px;
-		margin-top: 5px;
+		margin-top: 3px;
 		margin-left: 3px;
 	}
 	.menu {
@@ -59,5 +59,21 @@
 	.title {
 		margin:auto;
 		color: white;
+	}
+
+	@media screen and (max-width: 992px) {
+		#img {
+			border-radius: 100%;
+			height: 30px;
+			width: 30px;
+			margin-top: 10px;
+			margin-left: 10px;
+		}
+
+		.menu {
+			margin-right: 10px;
+			z-index: 2;
+			margin-top: 5px;
+		}
 	}
 </style>
