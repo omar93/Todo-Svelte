@@ -47,33 +47,27 @@ export default class dbhandler {
         docRef.set({
             todo: todo.todo,
             id: todo.id,
-            status: todo.done
+            isDone: todo.isDone
         })
         .then(() => console.log('Document added'))
         .catch(err => console.log('ERROR: ', err))
     }
 
-    async getTodos (uid) {
-        let todoArr = []
-        let todosRef = db.collection('users').doc(uid).collection('Todos')
-        todosRef.get().then(querySnapshot => {
-            querySnapshot.forEach(doc => {
-                todoArr = [...todoArr,doc.data()]
-            })
-        })
-        .catch(err => console.log('ERROR: ', err))
-        return todoArr
-    }
-
     updateTodo (todo, uid) {
         let todosRef = db.collection('users').doc(uid).collection('todos').doc(todo.id)
-        console.log('status: ', todo.done, ' id: ', uid)
         todosRef.update({
             'id':todo.id,
-            'status':todo.done,
+            'isDone':todo.isDone,
             'todo':todo.todo
         })
         .then(() => console.log('Document updated!'))
         .catch(err => console.log('ERROR: ', err))
-    }  
+    }
+
+    removeTodo(id,uid) {
+        let todosRef = db.collection('users').doc(uid).collection('todos').doc(id)
+        todosRef.delete()
+        .then()
+        .catch(err => console.log('ERROR: ', err))
+    }
 }

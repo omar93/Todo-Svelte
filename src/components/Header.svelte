@@ -4,11 +4,15 @@
 	import dbhandler from '../lib/firebaseDB'
 	import MenuButton from './MenuButton.svelte'
 	import { idStore } from '../data/idStore'
+	import { appStore } from '../data/appStore'
+	import { todoStore } from '../data/todoStore'
 	import { headerColorStore } from '../data/headerColorStore'
 
 	let db = new dbhandler()
-	let color,url
+	let color,url,app
+
 	headerColorStore.subscribe(col => color = col)
+	appStore.subscribe(data => app = data)
 
 	firebase.auth().onAuthStateChanged(async Currentuser => {
 		if (Currentuser) {
@@ -16,8 +20,16 @@
 			db.checkUser(firebase.auth().currentUser)
 			url = Currentuser.photoURL
 			localStorage.setItem('uid', Currentuser.uid)
-			// let firebaseTodos = await db.getTodos(Currentuser.uid)
-			// printLocal(firebaseTodos)
+			if(app === 'online') {
+				let todosRef = firebase.firestore().collection('users').doc(Currentuser.uid).collection('todos')
+				todosRef.onSnapshot(querySnapshot => {
+					let todoArr = []
+					querySnapshot.forEach(doc => {
+						todoArr = [...todoArr, doc.data()]
+					})
+					todoStore.set(todoArr)
+				})
+			}
 		} else {
 			console.log('You are offline, no syncing availabe')
 			url = './profile.jpg'

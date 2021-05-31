@@ -6,44 +6,40 @@
 
     import Checkbox from './Checkbox.svelte'
 
-    export let todo, id, done
+    export let todo, id, isDone
     const dispatch = createEventDispatcher()
     let todoColor, textColor
 
     let editable = false
     let newTodo = todo
     
-    todoColorStore.subscribe(col => {
-        todoColor = col
-    })
-    textColorStore.subscribe(col => {
-        textColor = col
-    })
+    todoColorStore.subscribe(col => todoColor = col)
+    textColorStore.subscribe(col => textColor = col)
 
     const removeTodo = () => dispatch('remove', id)
     const editTodo = () => {
         editable = !editable
         if(todo != newTodo) {
             todo = newTodo
-            dispatch('update', {id,done, todo})
+            dispatch('update', {id,isDone, todo})
         }
     }
     const updateTodo = () => {
-        done = !done
-        dispatch('update', {id,done, todo})
+        isDone = !isDone
+        dispatch('update', {id,isDone, todo})
     }
 </script>
 
 <li in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}" style="background-color:{todoColor};">
     <span id="status">
-        <Checkbox bind:checked={done}></Checkbox>
+        <Checkbox bind:checked={isDone}></Checkbox>
     </span>
     {#if editable}
         <form id="form" on:submit|preventDefault={editTodo}>
             <input id="altText" type="text" bind:value={newTodo} placeholder={todo}>
         </form>
     {:else}
-        <span on:click|stopPropagation={updateTodo} id="text" type="text" class=" {done ? 'done' : ''} center" style="color:{textColor}">{todo}</span>
+        <span on:click|stopPropagation={updateTodo} id="text" type="text" class=" {isDone ? 'done' : ''} center" style="color:{textColor}">{todo}</span>
     {/if}
     <div id="buttonContainer" >
         <span id="editButton" on:click|stopPropagation={editTodo} class="center">✏️</span>

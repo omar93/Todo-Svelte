@@ -20,7 +20,7 @@
             return
         }
         e.preventDefault()
-        let todo = {'todo':textField, 'id':uuid(),'done': false}
+        let todo = {'todo':textField, 'id':uuid(),'isDone': false}
         textField ? todoStore.update(orignalArray => [...orignalArray, todo]) : ''
         if($appStore === 'online') db.addTodo(todo, localStorage.getItem('uid'))
         textField = ''
