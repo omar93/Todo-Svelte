@@ -13,11 +13,11 @@
 <div class="welcome">
     <p>Welcome</p>
     <div class="online">
-        <p>Sigin to google to synd your todos across your devices</p>
+        <p>Sign in to Google to sync your to-dos across your devices</p>
         <GoogleSignin></GoogleSignin>
     </div>
     <div class="offline">
-        <p>contine offline, todos will only be saved locally!</p>
+        <p>Continue offline, to-dos will only be saved locally!</p>
         <button class="offlineButton" on:click={handleOffline}>Continue offline</button>
     </div>
 </div>

@@ -1,9 +1,10 @@
 <script>
-    import Todo from './Todo.svelte'
+    import TodoReverse from './TodoReverse.svelte'
     import dbhandler from '../lib/firebaseDB'
     import { idStore } from '../data/idStore'
     import { appStore } from '../data/appStore'
     import { todoStore } from '../data/todoStore'
+import Todo from './Todo.svelte'
     
     let db = new dbhandler()
     let userID
@@ -22,7 +23,11 @@
 
 <ul>
     {#each $todoStore as todo}
-        <Todo {...todo} on:remove={removeChild} on:update={updateChild}></Todo>
+      <!-- 
+           <TodoReverse {...todo} on:remove={removeChild} on:update={updateChild}></TodoReverse>
+      -->  
+       
+        <Todo {...todo}  on:remove={removeChild} on:update={updateChild}></Todo>
     {/each}
 </ul>
 

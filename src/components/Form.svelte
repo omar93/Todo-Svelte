@@ -9,10 +9,6 @@
     let db = new dbHandler()
 
     let textField
-    let height
-    let width
-
-    const removeAll = () => {todoStore.set([])}
     const addTodo = async e => {
         if(textField.length > todoTextLength) {
             alert('Max 80 characters & needs to be bigger tha 0 character')
@@ -29,11 +25,10 @@
 </script>
 
 <div id="parent">
-    <button class="clear" bind:clientWidth={width} on:click={removeAll} style="height:{height}px;">CLEAR</button>
     <form on:submit|self={addTodo}>
-        <input class="input" type="text" bind:value={textField} placeholder="Todo" style="height:{height}px;">
+        <input class="input" type="text" bind:value={textField} placeholder="Todo">
     </form>
-    <button bind:clientHeight={height} class="add" on:click={addTodo} style="width:{width}px;">➕</button>
+    <button class="add" on:click={addTodo}>➕</button>
 </div>
 
 
@@ -44,15 +39,7 @@
         grid-template-columns: 70px 1fr 70px;
         gap: 10px;
         grid-template-areas:
-        'clear input add';
-    }
-    .clear {
-        grid-area: clear;
-        background-color: rgb(255, 0, 0);
-        color: white;
-        font-size: 1em;
-        text-align: center;
-        border: 1px solid black;
+        'input add';
     }
     .input {
         width: 100%;

@@ -46,15 +46,15 @@
 	}
 	#img {
 		border-radius: 100%;
-		height: 50px;
-		width: 50px;
-		margin-top: 3px;
-		margin-left: 3px;
+		height: 45px;
+		width: 45px;
+		margin-top: 1.5px;
+		margin-left: 2.5px;
 	}
 	.menu {
 		margin-right: 10px;
 		z-index: 2;
-		margin-top: 7px;
+		margin-top: 5px;
 	}
 	.title {
 		margin:auto;
@@ -64,16 +64,16 @@
 	@media screen and (max-width: 992px) {
 		#img {
 			border-radius: 100%;
-			height: 30px;
-			width: 30px;
-			margin-top: 10px;
-			margin-left: 10px;
+			height: 35px;
+			width: 35px;
+			margin-top: 5px;
+			margin-left: 5px;
 		}
 
 		.menu {
 			margin-right: 10px;
 			z-index: 2;
-			margin-top: 5px;
+			margin-top: 2px;
 		}
 	}
 </style>

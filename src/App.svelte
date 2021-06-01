@@ -1,5 +1,5 @@
 <script>
-	import './lib/sw-install'
+	// import './lib/sw-install'
 
 	import Welcome from './components/Welcome.svelte'
 	import Header from './components/Header.svelte'
@@ -25,15 +25,20 @@
 <Welcome></Welcome>
 {:else}
 
-<div id="menuContainer">
-	{#if menuVisable} 
-		<Menu></Menu>
-	{/if}
-</div>
-<div id="headerContainer">
-	<Header on:menu={toggleMenu}></Header>
-</div>
-<div id="parent">
+
+
+<div class="grandParent">
+
+	<div id="menuContainer">
+		{#if menuVisable} 
+			<Menu></Menu>
+		{/if}
+	</div>
+	
+	<div id="headerContainer">
+		<Header on:menu={toggleMenu}></Header>
+	</div>
+
 	<div id="listContainer">
 		<TodoList></TodoList>
 	</div>
@@ -41,25 +46,36 @@
 	<div id="formContainer">
 		<Form {todoTextLength}></Form>
 	</div>
+
 </div>
+
 
 {/if}
 
 <style>
-	#headerContainer {
-		height: 6%;
-	}
-	#parent {
-		display: flex;
-		flex-direction: column;
-		height: 94%;
-		width: 40%;
-		margin: auto;
-	}
 
-	#listContainer {
-		width: 100%;
+	.grandParent {
+		margin: auto;
+		display: grid;
 		height: 100%;
+		grid-template-rows: 50px 20px 1fr 10px 50px;
+		grid-template-columns: 25% 1fr 25%;
+		grid-template-areas: 
+		'header		header		header'
+		'.			.			menu'
+		'.			main		menu'
+		'.			.			menu'
+		'.			input		menu';
+	}
+	#headerContainer {
+		border: 1px solid black;
+		grid-area: header;
+	}
+	#menuContainer {
+		grid-area: menu;
+	}
+	#listContainer {
+		grid-area: main;
 		overflow: scroll;
 		overflow-x: hidden;
 		-ms-overflow-style: none;
@@ -71,23 +87,32 @@
 	}
 
 	#formContainer {
-		margin-top: auto;
+		grid-area: input;
 	}
 
 	@media screen and (max-width: 992px) {
-		#parent {
+		.grandParent {
+			display: grid;
+			height: 100%;
 			width: 100%;
-			border:0;
-			margin: auto;
-			position:static;
+			grid-template-rows: 50px 5px 1fr 10px 50px;
+			grid-template-columns: 100%;
+			grid-template-areas: 
+			'header'
+			'.'
+			'main'
+			'.'
+			'input'
 		}
-		#listContainer {
-			align-self: center;
-			width: 85%;
-		}
-		#formContainer {
+
+		#menuContainer {
+			position: absolute;
 			width: 100%;
+			height: 100%;
+			margin-left: 0%;
+			z-index: 2;
 		}
+
 	}
 
 

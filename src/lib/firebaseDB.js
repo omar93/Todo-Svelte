@@ -64,7 +64,7 @@ export default class dbhandler {
     }
 
     ListenToChanges(id) {
-        let todosRef = firebase.firestore().collection('users').doc(id).collection('todos')
+        let todosRef = db.collection('users').doc(id).collection('todos')
         todosRef.orderBy('timestamp').onSnapshot(querySnapshot => {
             let todoArr = []
             querySnapshot.forEach(doc => {
@@ -78,5 +78,8 @@ export default class dbhandler {
             todoStore.set(todoArr)
         })
     }
-
+    // FIX!!!!!
+    clearTodoList(id) { 
+        db.collection('users').doc(id).collection('todos')
+    }
 }

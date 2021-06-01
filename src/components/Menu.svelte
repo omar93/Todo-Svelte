@@ -5,6 +5,8 @@
 	import { headerColorStore } from '../data/headerColorStore'
 	import { backgroundColorStore } from '../data/backgroundColorStore'
 	import SignoutButton from './SignoutButton.svelte'
+	import Todo from './Todo.svelte'
+	import TodoReverse from './TodoReverse.svelte'
 </script>
 
 <div id="menu" in:fly="{{ x: -100, duration: 500 }}" out:fly="{{ x: 0, duration: 500 }}">
@@ -28,15 +30,15 @@
 		<label for="head">Todo Text Color</label>
 	</div>
 	<SignoutButton></SignoutButton>
+	<Todo></Todo>
+	<TodoReverse></TodoReverse>
+	<button class="clear">CLEAR</button>
 </div>
 
 <style>
 	#menu {
-        position: absolute;
         background-color: white;
-		width: 30%;
         height: 100%;
-		margin-left: 70%;
 		z-index: 2;
 		display: flex;
 		flex-direction: column;
@@ -47,7 +49,7 @@
 		height: 40px;
 	}
 	label {
-		margin-left: 20px;
+		margin-left: 5px;
 		margin-top: 8px;
 	}
 	input {

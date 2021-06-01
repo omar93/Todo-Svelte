@@ -6,7 +6,7 @@
 
     import Checkbox from './Checkbox.svelte'
 
-    export let todo = 'Todo', id = '123', isDone = false
+    export let todo, id, isDone
     const dispatch = createEventDispatcher()
     let todoColor, textColor
 
@@ -31,9 +31,11 @@
 </script>
 
 <li in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200}}" style="background-color:{todoColor};">
-    <span id="status">
-        <Checkbox bind:checked={isDone}></Checkbox>
-    </span>
+    <div id="buttonContainer" >
+        <span id="removeButton" on:click|stopPropagation={removeTodo} class="center">X</span>
+        <span id="editButton" on:click|stopPropagation={editTodo} class="center">✏️</span>
+    </div>
+
     {#if editable}
         <form id="form" on:submit|preventDefault={editTodo}>
             <input id="altText" type="text" bind:value={newTodo} placeholder={todo}>
@@ -41,10 +43,10 @@
     {:else}
         <span on:click|stopPropagation={updateTodo} id="text" type="text" class=" {isDone ? 'done' : ''} center" style="color:{textColor}">{todo}</span>
     {/if}
-    <div id="buttonContainer" >
-        <span id="editButton" on:click|stopPropagation={editTodo} class="center">✏️</span>
-        <span id="removeButton" on:click|stopPropagation={removeTodo} class="center">X</span>
-    </div>
+
+    <span id="status">
+        <Checkbox bind:checked={isDone}></Checkbox>
+    </span>
 </li>
 
 <style>
@@ -53,8 +55,8 @@
         height: 50px;
         list-style: none;
         display: grid;
-        grid-template-columns: 50px 1fr 100px;
-        grid-template-areas: 'status text buttons';
+        grid-template-columns: 100px 1fr 50px;
+        grid-template-areas: 'buttons text status';
         margin-top: 10px;
         border: 1px solid black;
         border-radius:7px;
@@ -87,30 +89,20 @@
         margin-top: 6px;
         text-align: center;
     }
-
     #buttonContainer{
         grid-area: buttons;
         display: flex;
         justify-content: space-evenly;
         align-items: center;
         gap: 5px;
-        
     }
     #editButton {
         width: 30%;
         height: 55%;
         font-size: 1em;
         cursor: pointer;
-        
     }
-    #editButton::after {
-        content: '';
-        background: black;
-        position: relative;
-        width: 1px;
-        height: 50px;
-        right: -5px;    
-    }
+
     #removeButton {
         width: 35%;
         height: 60%;
@@ -119,6 +111,16 @@
         border: 2px solid black;
         color: white;
         border-radius: 5px;
+        margin: -5px;
+    }
+
+    #removeButton::after {
+        content: '';
+        background: black;
+        position: relative;
+        width: 1px;
+        height: 51px;
+        left: 20px;
     }
     #removeButton:hover {
         cursor: pointer;
