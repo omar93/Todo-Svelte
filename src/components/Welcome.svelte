@@ -1,6 +1,6 @@
 <script>
     import { appStore } from '../data/appStore'
-    import GoogleSignin from './GoogleSigninButton.svelte'
+    import GoogleSignin from './input/GoogleSigninButton.svelte'
 
     const handleOffline = () => {
         if (confirm('Are you want to continue offline?')) {

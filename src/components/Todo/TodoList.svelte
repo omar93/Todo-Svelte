@@ -1,14 +1,17 @@
 <script>
-    import TodoReverse from './TodoReverse.svelte'
-    import dbhandler from '../lib/firebaseDB'
-    import { idStore } from '../data/idStore'
-    import { appStore } from '../data/appStore'
-    import { todoStore } from '../data/todoStore'
-import Todo from './Todo.svelte'
+    import Form from '../input/Form.svelte'
+    import dbhandler from '../../lib/firebaseDB'
+    import { idStore } from '../../data/idStore'
+    import { appStore } from '../../data/appStore'
+    import { todoStore } from '../../data/todoStore'
+    import Todo from './Todo.svelte'
     
     let db = new dbhandler()
     let userID
+    let newTodo = false
+
     idStore.subscribe(data => userID = data)
+    
     const removeChild = ({detail: id}) => {
         $todoStore = $todoStore.filter(todo => todo.id != id)
         if($appStore === 'online') db.removeTodo(id,userID)
@@ -21,15 +24,14 @@ import Todo from './Todo.svelte'
     }
 </script>
 
+
 <ul>
     {#each $todoStore as todo}
-      <!-- 
-           <TodoReverse {...todo} on:remove={removeChild} on:update={updateChild}></TodoReverse>
-      -->  
-       
         <Todo {...todo}  on:remove={removeChild} on:update={updateChild}></Todo>
     {/each}
+    <Form></Form>
 </ul>
+
 
 <style>
     ul {
@@ -37,6 +39,5 @@ import Todo from './Todo.svelte'
         padding: 0;
         max-width: 100%;
         list-style: none;
-        
     }
 </style>

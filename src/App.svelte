@@ -2,10 +2,9 @@
 	// import './lib/sw-install'
 
 	import Welcome from './components/Welcome.svelte'
-	import Header from './components/Header.svelte'
-	import Menu from './components/Menu.svelte'
-	import TodoList from './components/TodoList.svelte'
-	import Form from './components/Form.svelte'
+	import Header from './components/Header/Header.svelte'
+	import Menu from './components/Header/Menu.svelte'
+	import TodoList from './components/Todo/TodoList.svelte'
 	
 	import { appStore } from './data/appStore'
 	import { backgroundColorStore } from './data/backgroundColorStore'
@@ -22,7 +21,7 @@
 </script>
 
 {#if choice === 'new'}
-<Welcome></Welcome>
+	<Welcome></Welcome>
 {:else}
 
 
@@ -43,9 +42,7 @@
 		<TodoList></TodoList>
 	</div>
 
-	<div id="formContainer">
-		<Form {todoTextLength}></Form>
-	</div>
+
 
 </div>
 
@@ -58,14 +55,11 @@
 		margin: auto;
 		display: grid;
 		height: 100%;
-		grid-template-rows: 50px 20px 1fr 10px 50px;
+		grid-template-rows: 50px 1fr;
 		grid-template-columns: 25% 1fr 25%;
 		grid-template-areas: 
 		'header		header		header'
-		'.			.			menu'
 		'.			main		menu'
-		'.			.			menu'
-		'.			input		menu';
 	}
 	#headerContainer {
 		border: 1px solid black;
@@ -86,23 +80,16 @@
     	display: none;
 	}
 
-	#formContainer {
-		grid-area: input;
-	}
-
 	@media screen and (max-width: 992px) {
 		.grandParent {
 			display: grid;
 			height: 100%;
 			width: 100%;
-			grid-template-rows: 50px 5px 1fr 10px 50px;
+			grid-template-rows: 50px 1fr;
 			grid-template-columns: 100%;
 			grid-template-areas: 
 			'header'
-			'.'
 			'main'
-			'.'
-			'input'
 		}
 
 		#menuContainer {
@@ -110,7 +97,7 @@
 			width: 100%;
 			height: 100%;
 			margin-left: 0%;
-			z-index: 2;
+			display: none;
 		}
 
 	}

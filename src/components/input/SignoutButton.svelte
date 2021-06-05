@@ -1,6 +1,6 @@
 <script>
-    import { appStore } from '../data/appStore'
-    import { todoStore } from '../data/todoStore'
+    import { appStore } from '../../data/appStore'
+    import { todoStore } from '../../data/todoStore'
     import GoogleSigninButton from './GoogleSigninButton.svelte'
     import firebase from 'firebase/app'
     import 'firebase/auth'

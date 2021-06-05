@@ -4,19 +4,13 @@
     import uuid from 'uuid-v4'
     import dbHandler  from '../lib/firebaseDB'
 
-    export let todoTextLength
-
     let db = new dbHandler()
 
     let textField
     const addTodo = async e => {
-        if(textField.length > todoTextLength) {
-            alert('Max 80 characters & needs to be bigger tha 0 character')
-            textField = ''
-            return
-        }
         e.preventDefault()
-        let todo = {'todo':textField, 'id':uuid(),'isDone': false}
+
+        let todo = {'todo':textField|'tja', 'id':uuid(),'isDone': false}
         textField ? todoStore.update(orignalArray => [...orignalArray, todo]) : ''
         if($appStore === 'online') db.addTodo(todo, localStorage.getItem('uid'))
         textField = ''

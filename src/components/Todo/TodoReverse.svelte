@@ -1,10 +1,8 @@
 <script>
     import { fly } from 'svelte/transition'
-    import { todoColorStore } from '../data/todoColorStore'
-    import { textColorStore } from '../data/textColorStore'
+    import { todoColorStore } from '../../data/todoColorStore'
+    import { textColorStore } from '../../data/textColorStore'
     import { createEventDispatcher } from 'svelte'
-
-    import Checkbox from './Checkbox.svelte'
 
     export let todo, id, isDone
     const dispatch = createEventDispatcher()
@@ -45,7 +43,6 @@
     {/if}
 
     <span id="status">
-        <Checkbox bind:checked={isDone}></Checkbox>
     </span>
 </li>
 

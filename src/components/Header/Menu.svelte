@@ -1,12 +1,12 @@
 <script>
 	import { fly } from 'svelte/transition'
-	import { todoColorStore } from '../data/todoColorStore'
-	import { textColorStore } from '../data/textColorStore'
-	import { headerColorStore } from '../data/headerColorStore'
-	import { backgroundColorStore } from '../data/backgroundColorStore'
-	import SignoutButton from './SignoutButton.svelte'
-	import Todo from './Todo.svelte'
-	import TodoReverse from './TodoReverse.svelte'
+	import { todoColorStore } from '../../data/todoColorStore'
+	import { textColorStore } from '../../data/textColorStore'
+	import { headerColorStore } from '../../data/headerColorStore'
+	import { backgroundColorStore } from '../../data/backgroundColorStore'
+	import SignoutButton from '../input/SignoutButton.svelte'
+	import Todo from '../Todo/Todo.svelte'
+	import TodoReverse from '../Todo/TodoReverse.svelte'
 </script>
 
 <div id="menu" in:fly="{{ x: -100, duration: 500 }}" out:fly="{{ x: 0, duration: 500 }}">

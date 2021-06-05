@@ -1,12 +1,11 @@
 <script>
     import { fly } from 'svelte/transition'
-    import { todoColorStore } from '../data/todoColorStore'
-    import { textColorStore } from '../data/textColorStore'
+    import { todoColorStore } from '../../data/todoColorStore'
+    import { textColorStore } from '../../data/textColorStore'
     import { createEventDispatcher } from 'svelte'
 
-    import Checkbox from './Checkbox.svelte'
-
     export let todo = 'Todo', id = '123', isDone = false
+    let isCurrent = false 
     const dispatch = createEventDispatcher()
     let todoColor, textColor
 
@@ -28,12 +27,34 @@
         isDone = !isDone
         dispatch('update', {id,isDone, todo})
     }
+
+    const handleOver = () => {
+        isCurrent = true
+        console.log(isCurrent)
+    }
+
+    const handleOut = () => {
+        isCurrent = false
+        console.log(isCurrent)
+    }
 </script>
 
-<li in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200}}" style="background-color:{todoColor};">
-    <span id="status">
-        <Checkbox bind:checked={isDone}></Checkbox>
-    </span>
+<li
+in:fly="{{ x: 200, duration: 500 }}" 
+out:fly="{{ x: -200}}"
+on:mouseenter={handleOver}
+on:mouseleave={handleOut}
+on:
+style="background-color:{todoColor};"
+>
+
+    <div class="statusContainer center">
+        <!-- <Checkbox bind:checked={isDone}></Checkbox> -->
+        {#if isDone}
+            <span>✔️</span>
+        {/if}
+    </div>
+
     {#if editable}
         <form id="form" on:submit|preventDefault={editTodo}>
             <input id="altText" type="text" bind:value={newTodo} placeholder={todo}>
@@ -41,36 +62,40 @@
     {:else}
         <span on:click|stopPropagation={updateTodo} id="text" type="text" class=" {isDone ? 'done' : ''} center" style="color:{textColor}">{todo}</span>
     {/if}
-    <div id="buttonContainer" >
-        <span id="editButton" on:click|stopPropagation={editTodo} class="center">✏️</span>
-        <span id="removeButton" on:click|stopPropagation={removeTodo} class="center">X</span>
+    
+    {#if isCurrent}
+    <div id="buttonContainer">
+
+        <div class="editParent center">
+            <span id="editButton" on:click|stopPropagation={editTodo} class="center">✏️</span>
+        </div>
+        
+        <div id="removeParent">
+            <span id="removeButton" on:click|stopPropagation={removeTodo} class="center">X</span>
+        </div>
+
     </div>
+    {/if}
+
 </li>
 
 <style>
     li {
         max-width: 100%;
-        height: 50px;
+        height: 70px;
         list-style: none;
         display: grid;
         grid-template-columns: 50px 1fr 100px;
         grid-template-areas: 'status text buttons';
-        margin-top: 10px;
-        border: 1px solid black;
-        border-radius:7px;
+        border-bottom: 1px solid #0000007e;
+        border-left: 1px solid #0000007e;
+        border-right: 1px solid #0000007e;
     }
 
-    #status {
+    .statusContainer {
         grid-area: status;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.7em;
-        display: flex;
-        width: 50%;
-        height: 50%;
-        margin: auto;
     }
-
+    
     #text {
         grid-area: text;
         word-break: break-word;
@@ -88,37 +113,32 @@
         text-align: center;
     }
 
-    #buttonContainer{
+    #buttonContainer {
+        width: 100px;
+        height: 70px;
         grid-area: buttons;
-        display: flex;
-        justify-content: space-evenly;
-        align-items: center;
-        gap: 5px;
-        
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas: 
+        'edit remove';
+    }
+
+    .editParent {
+        grid-area: edit;
     }
     #editButton {
-        width: 30%;
-        height: 55%;
-        font-size: 1em;
+        font-size: 1.5em;
         cursor: pointer;
-        
     }
-    #editButton::after {
-        content: '';
-        background: black;
-        position: relative;
-        width: 1px;
-        height: 50px;
-        right: -5px;    
+    #removeParent{
+        grid-area: remove;
+        display:flex;
     }
     #removeButton {
-        width: 35%;
-        height: 60%;
-        font-size: 1.2em;
+        font-size: 1em;
         background-color: crimson;
-        border: 2px solid black;
         color: white;
-        border-radius: 5px;
+        width: 100%;
     }
     #removeButton:hover {
         cursor: pointer;
@@ -135,9 +155,8 @@
         align-items: center;
     }
     .done {text-decoration: line-through;}
+    .hidden {display: none;}
     @media screen and (max-width: 992px) {
-		#text{
-			font-size: 0.85em;
-		}
+        .hidden {display: none;}
     }
 </style>

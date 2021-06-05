@@ -1,5 +1,5 @@
 <script>
-    import { appStore } from '../data/appStore'
+    import { appStore } from '../../data/appStore'
     import firebase from 'firebase/app'
     import 'firebase/auth'
 

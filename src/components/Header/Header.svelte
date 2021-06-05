@@ -1,11 +1,11 @@
 <script>
 	import firebase from 'firebase/app'
 	import 'firebase/auth'
-	import dbhandler from '../lib/firebaseDB'
+	import dbhandler from '../../lib/firebaseDB'
 	import MenuButton from './MenuButton.svelte'
-	import { idStore } from '../data/idStore'
-	import { appStore } from '../data/appStore'
-	import { headerColorStore } from '../data/headerColorStore'
+	import { idStore } from '../../data/idStore'
+	import { appStore } from '../../data/appStore'
+	import { headerColorStore } from '../../data/headerColorStore'
 
 	let db = new dbhandler()
 	let color,url,app
