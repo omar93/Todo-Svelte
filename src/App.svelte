@@ -1,10 +1,11 @@
 <script>
-	// import './lib/sw-install'
+	import './lib/sw-install'
 
 	import Welcome from './components/Welcome.svelte'
-	import Header from './components/Header/Header.svelte'
-	import Menu from './components/Header/Menu.svelte'
-	import TodoList from './components/Todo/TodoList.svelte'
+	import Header from './components/Header.svelte'
+	import Menu from './components/Menu.svelte'
+	import TodoList from './components/TodoList.svelte'
+	import Form from './components/Form.svelte'
 	
 	import { appStore } from './data/appStore'
 	import { backgroundColorStore } from './data/backgroundColorStore'
@@ -21,55 +22,44 @@
 </script>
 
 {#if choice === 'new'}
-	<Welcome></Welcome>
+<Welcome></Welcome>
 {:else}
 
-
-
-<div class="grandParent">
-
-	<div id="menuContainer">
-		{#if menuVisable} 
-			<Menu></Menu>
-		{/if}
-	</div>
-	
-	<div id="headerContainer">
-		<Header on:menu={toggleMenu}></Header>
-	</div>
-
+<div id="menuContainer">
+	{#if menuVisable} 
+		<Menu></Menu>
+	{/if}
+</div>
+<div id="headerContainer">
+	<Header on:menu={toggleMenu}></Header>
+</div>
+<div id="parent">
 	<div id="listContainer">
 		<TodoList></TodoList>
 	</div>
 
-
-
+	<div id="formContainer">
+		<Form {todoTextLength}></Form>
+	</div>
 </div>
-
 
 {/if}
 
 <style>
-
-	.grandParent {
-		margin: auto;
-		display: grid;
-		height: 100%;
-		grid-template-rows: 50px 1fr;
-		grid-template-columns: 25% 1fr 25%;
-		grid-template-areas: 
-		'header		header		header'
-		'.			main		menu'
-	}
 	#headerContainer {
-		border: 1px solid black;
-		grid-area: header;
+		height: 6%;
 	}
-	#menuContainer {
-		grid-area: menu;
+	#parent {
+		display: flex;
+		flex-direction: column;
+		height: 94%;
+		width: 40%;
+		margin: auto;
 	}
+
 	#listContainer {
-		grid-area: main;
+		width: 100%;
+		height: 100%;
 		overflow: scroll;
 		overflow-x: hidden;
 		-ms-overflow-style: none;
@@ -80,26 +70,24 @@
     	display: none;
 	}
 
+	#formContainer {
+		margin-top: auto;
+	}
+
 	@media screen and (max-width: 992px) {
-		.grandParent {
-			display: grid;
-			height: 100%;
+		#parent {
 			width: 100%;
-			grid-template-rows: 50px 1fr;
-			grid-template-columns: 100%;
-			grid-template-areas: 
-			'header'
-			'main'
+			border:0;
+			margin: auto;
+			position:static;
 		}
-
-		#menuContainer {
-			position: absolute;
+		#listContainer {
+			align-self: center;
+			width: 85%;
+		}
+		#formContainer {
 			width: 100%;
-			height: 100%;
-			margin-left: 0%;
-			display: none;
 		}
-
 	}
 
 

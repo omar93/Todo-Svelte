@@ -1,6 +1,6 @@
 <script>
     import { appStore } from '../data/appStore'
-    import GoogleSignin from './input/GoogleSigninButton.svelte'
+    import GoogleSignin from './GoogleSigninButton.svelte'
 
     const handleOffline = () => {
         if (confirm('Are you want to continue offline?')) {
@@ -13,11 +13,11 @@
 <div class="welcome">
     <p>Welcome</p>
     <div class="online">
-        <p>Sign in to Google to sync your to-dos across your devices</p>
+        <p>Sigin to google to synd your todos across your devices</p>
         <GoogleSignin></GoogleSignin>
     </div>
     <div class="offline">
-        <p>Continue offline, to-dos will only be saved locally!</p>
+        <p>contine offline, todos will only be saved locally!</p>
         <button class="offlineButton" on:click={handleOffline}>Continue offline</button>
     </div>
 </div>
