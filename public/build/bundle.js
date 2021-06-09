@@ -804,12 +804,6 @@ var app = (function () {
         $inject_state() { }
     }
 
-    if('serviceWorker' in navigator){
-        navigator.serviceWorker.register('/sw.js')
-        .then()
-        .catch((err) => console.log('service worker not registered', err));
-    }
-
     const subscriber_queue = [];
     /**
      * Create a `Writable` store that allows both updating and reading by subscription.
@@ -25178,19 +25172,19 @@ var app = (function () {
     			div3 = element("div");
     			create_component(form.$$.fragment);
     			attr_dev(div0, "id", "menuContainer");
-    			add_location(div0, file, 27, 0, 710);
+    			add_location(div0, file, 27, 0, 713);
     			attr_dev(div1, "id", "headerContainer");
     			attr_dev(div1, "class", "svelte-4q8rd5");
-    			add_location(div1, file, 32, 0, 785);
+    			add_location(div1, file, 32, 0, 788);
     			attr_dev(div2, "id", "listContainer");
     			attr_dev(div2, "class", "svelte-4q8rd5");
-    			add_location(div2, file, 36, 1, 878);
+    			add_location(div2, file, 36, 1, 881);
     			attr_dev(div3, "id", "formContainer");
     			attr_dev(div3, "class", "svelte-4q8rd5");
-    			add_location(div3, file, 40, 1, 937);
+    			add_location(div3, file, 40, 1, 940);
     			attr_dev(div4, "id", "parent");
     			attr_dev(div4, "class", "svelte-4q8rd5");
-    			add_location(div4, file, 35, 0, 859);
+    			add_location(div4, file, 35, 0, 862);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div0, anchor);

@@ -1,5 +1,5 @@
 <script>
-	import './lib/sw-install'
+	// import './lib/sw-install'
 
 	import Welcome from './components/Welcome.svelte'
 	import Header from './components/Header.svelte'
