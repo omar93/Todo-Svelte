@@ -14,14 +14,27 @@
     }
 
     const updateChild = ({detail})=> {
+        console.log('The one that was clicked:')
+        console.log(detail)
         const index = $todoStore.findIndex(item => item.id === detail.id)
         $todoStore[index] = detail
         if($appStore === 'online') db.updateTodo(detail,userID)
     }
 </script>
 
+<p>Needs to be done</p>
+<hr>
 <ul>
-    {#each $todoStore as todo}
+    {#each $todoStore.filter(todo => !todo.isDone) as todo}
+        <Todo {...todo} on:remove={removeChild} on:update={updateChild}></Todo>
+    {/each}
+</ul>
+
+<br>
+<span>Finished</span>
+<hr>
+<ul>
+    {#each $todoStore.filter(todo => todo.isDone) as todo}
         <Todo {...todo} on:remove={removeChild} on:update={updateChild}></Todo>
     {/each}
 </ul>
@@ -32,6 +45,5 @@
         padding: 0;
         max-width: 100%;
         list-style: none;
-        
     }
 </style>

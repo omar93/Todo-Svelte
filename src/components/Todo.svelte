@@ -4,8 +4,6 @@
     import { textColorStore } from '../data/textColorStore'
     import { createEventDispatcher } from 'svelte'
 
-    import Checkbox from './Checkbox.svelte'
-
     export let todo, id, isDone
     const dispatch = createEventDispatcher()
     let todoColor, textColor
@@ -31,8 +29,10 @@
 </script>
 
 <li in:fly="{{ x: 200, duration: 500 }}" out:fly="{{ x: -200, duration: 500 }}" style="background-color:{todoColor};">
-    <span id="status">
-        <Checkbox bind:checked={isDone}></Checkbox>
+    <span id="status" on:click|stopPropagation={updateTodo}>
+        {#if isDone}
+            <span>✔️</span>
+        {/if}
     </span>
     {#if editable}
         <form id="form" on:submit|preventDefault={editTodo}>

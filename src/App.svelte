@@ -25,39 +25,47 @@
 <Welcome></Welcome>
 {:else}
 
-<div id="menuContainer">
-	{#if menuVisable} 
-		<Menu></Menu>
-	{/if}
-</div>
-<div id="headerContainer">
-	<Header on:menu={toggleMenu}></Header>
-</div>
-<div id="parent">
+<div id="mainContainer">
+
+	<div id="menuContainer">
+		{#if menuVisable} 
+			<Menu></Menu>
+		{/if}
+	</div>
+
+	<div id="headerContainer">
+		<Header on:menu={toggleMenu}></Header>
+	</div>
+
 	<div id="listContainer">
 		<TodoList></TodoList>
 	</div>
 
-	<div id="formContainer">
+	<div id="inputContainer">
 		<Form {todoTextLength}></Form>
 	</div>
+
 </div>
 
 {/if}
 
 <style>
-	#headerContainer {
-		height: 6%;
+	#mainContainer {
+		display: grid;
+		grid-template-rows: 55px 1fr 55px;
+		grid-template-columns: 20% 60% 20%;
+		height: 100vh;
+		grid-template-areas: 
+		'header	header	header'
+		'.	list	.'
+		'.	input	.';
 	}
-	#parent {
-		display: flex;
-		flex-direction: column;
-		height: 94%;
-		width: 40%;
-		margin: auto;
+	#headerContainer {
+		grid-area: header;
 	}
 
 	#listContainer {
+		grid-area: list;
 		width: 100%;
 		height: 100%;
 		overflow: scroll;
@@ -70,23 +78,17 @@
     	display: none;
 	}
 
-	#formContainer {
-		margin-top: auto;
+	#inputContainer {
+		grid-area: input;
 	}
 
 	@media screen and (max-width: 992px) {
-		#parent {
-			width: 100%;
-			border:0;
-			margin: auto;
-			position:static;
-		}
-		#listContainer {
-			align-self: center;
-			width: 85%;
-		}
-		#formContainer {
-			width: 100%;
+		#mainContainer {
+			grid-template-columns: 1fr;
+			grid-template-areas: 
+			'header'
+			'list'
+			'input';
 		}
 	}
 
