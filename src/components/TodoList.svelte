@@ -31,7 +31,7 @@
 </ul>
 
 <br>
-<span>Finished</span>
+<p>Finished</p>
 <hr>
 <ul>
     {#each $todoStore.filter(todo => todo.isDone) as todo}
@@ -45,5 +45,9 @@
         padding: 0;
         max-width: 100%;
         list-style: none;
+    }
+
+    p {
+        text-align: center;
     }
 </style>

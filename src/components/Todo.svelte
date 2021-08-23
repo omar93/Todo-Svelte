@@ -56,8 +56,9 @@
         grid-template-columns: 50px 1fr 100px;
         grid-template-areas: 'status text buttons';
         margin-top: 10px;
-        border: 1px solid black;
-        border-radius:7px;
+        border-radius:5px;
+        -webkit-box-shadow: 0px 10px 5px -5px rgba(0,0,0,0.3); 
+        box-shadow: 0px 10px 5px -5px rgba(0,0,0,0.3);
     }
 
     #status {

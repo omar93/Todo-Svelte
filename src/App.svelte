@@ -1,14 +1,14 @@
 <script>
 	// import './lib/sw-install'
 
+	import TodoList from './components/TodoList.svelte'
 	import Welcome from './components/Welcome.svelte'
 	import Header from './components/Header.svelte'
-	import Menu from './components/Menu.svelte'
-	import TodoList from './components/TodoList.svelte'
 	import Form from './components/Form.svelte'
+	import Menu from './components/Menu.svelte'
 	
-	import { appStore } from './data/appStore'
 	import { backgroundColorStore } from './data/backgroundColorStore'
+	import { appStore } from './data/appStore'
 	
 
 	let todoTextLength = 80
@@ -17,12 +17,12 @@
 
 	appStore.subscribe(data => choice = data)
 	const toggleMenu = () => menuVisable = !menuVisable
-	backgroundColorStore.subscribe(col => window.document.body.style.backgroundColor = col)
+	backgroundColorStore.subscribe(col => window.document.body.style.background = col)
 	
 </script>
 
 {#if choice === 'new'}
-<Welcome></Welcome>
+	<Welcome></Welcome>
 {:else}
 
 <div id="mainContainer">
@@ -52,12 +52,13 @@
 <style>
 	#mainContainer {
 		display: grid;
-		grid-template-rows: 55px 1fr 55px;
+		grid-template-rows: 55px 1fr 20px 55px;
 		grid-template-columns: 20% 60% 20%;
 		height: 100vh;
 		grid-template-areas: 
 		'header	header	header'
 		'.	list	.'
+		'.	.	.'
 		'.	input	.';
 	}
 	#headerContainer {
@@ -88,6 +89,7 @@
 			grid-template-areas: 
 			'header'
 			'list'
+			'.'
 			'input';
 		}
 	}

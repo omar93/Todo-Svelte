@@ -7,36 +7,39 @@
 	import SignoutButton from './SignoutButton.svelte'
 </script>
 
-<div id="menu" in:fly="{{ x: -100, duration: 500 }}" out:fly="{{ x: 0, duration: 500 }}">
+<div id="menu" in:fly="{{ y: -100, duration: 500 }}" out:fly="{{ x: 0, duration: 500 }}">
 	<div class="colorContainer">
 		<input bind:value={$backgroundColorStore} type="color">
-		<label for="head">Background Color</label>
+		<label for="background-color">Background Color</label>
 	</div>
 		
 	<div class="colorContainer">
 		<input bind:value={$headerColorStore} type="color">
-		<label for="head">Header Background Color</label>
+		<label for="header-color">Header Background Color</label>
 	</div>
 		
 	<div class="colorContainer">
 		<input bind:value={$todoColorStore} type="color">
-		<label for="head">Todo Background Color</label>
+		<label for="todo-background-color">Todo Background Color</label>
 	</div>
 		
 	<div class="colorContainer">
 		<input bind:value={$textColorStore} type="color">
-		<label for="head">Todo Text Color</label>
+		<label for="todo-text-color">Todo Text Color</label>
 	</div>
-	<SignoutButton></SignoutButton>
+	<div class="signout">
+		<SignoutButton></SignoutButton>
+	</div>
 </div>
 
 <style>
 	#menu {
         position: absolute;
         background-color: white;
-		width: 30%;
-        height: 100%;
-		margin-left: 70%;
+		width: 20%;
+		height: 100%;
+		top: 0;
+		margin-left: 80%;
 		z-index: 2;
 		display: flex;
 		flex-direction: column;
@@ -54,6 +57,13 @@
 		height: 100%;
 		width: 80px;
 		padding: 1px;
+	}
+
+	.signout {
+		margin-top: auto;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 	
     @media screen and (max-width: 992px) {

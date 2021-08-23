@@ -22,3 +22,10 @@
 {:else if appStatus === 'online'}
     <button class="onlineButton" on:click={handleSignout}>Logout</button>
 {/if}
+
+<style>
+    .onlineButton {
+        width: 100%;
+        height: 50px;
+    }
+</style>
