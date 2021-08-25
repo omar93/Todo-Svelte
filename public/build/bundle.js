@@ -23002,46 +23002,56 @@ var app = (function () {
     const file$9 = "src\\components\\Modal.svelte";
 
     function create_fragment$9(ctx) {
-    	let div;
+    	let div1;
+    	let div0;
+    	let t0;
     	let form;
-    	let input0;
-    	let t;
-    	let input1;
+    	let h3;
+    	let t2;
+    	let input;
     	let mounted;
     	let dispose;
 
     	const block = {
     		c: function create() {
-    			div = element("div");
+    			div1 = element("div");
+    			div0 = element("div");
+    			t0 = space();
     			form = element("form");
-    			input0 = element("input");
-    			t = space();
-    			input1 = element("input");
-    			attr_dev(input0, "type", "text");
-    			attr_dev(input0, "placeholder", "new list name");
-    			add_location(input0, file$9, 11, 8, 304);
-    			attr_dev(input1, "type", "submit");
-    			input1.value = "submit";
-    			add_location(input1, file$9, 12, 8, 379);
-    			add_location(form, file$9, 10, 4, 248);
-    			attr_dev(div, "id", "modal-container");
-    			attr_dev(div, "class", "svelte-1mqh7x0");
-    			add_location(div, file$9, 9, 0, 216);
+    			h3 = element("h3");
+    			h3.textContent = "Name for the new list:";
+    			t2 = space();
+    			input = element("input");
+    			attr_dev(div0, "id", "black");
+    			attr_dev(div0, "class", "svelte-1woqpkx");
+    			add_location(div0, file$9, 10, 4, 248);
+    			add_location(h3, file$9, 12, 8, 361);
+    			attr_dev(input, "type", "text");
+    			attr_dev(input, "placeholder", "new list name");
+    			add_location(input, file$9, 13, 8, 402);
+    			attr_dev(form, "class", "svelte-1woqpkx");
+    			add_location(form, file$9, 11, 4, 305);
+    			attr_dev(div1, "id", "modal-container");
+    			attr_dev(div1, "class", "svelte-1woqpkx");
+    			add_location(div1, file$9, 9, 0, 216);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div, anchor);
-    			append_dev(div, form);
-    			append_dev(form, input0);
-    			set_input_value(input0, /*list*/ ctx[0]);
-    			append_dev(form, t);
-    			append_dev(form, input1);
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, div0);
+    			append_dev(div1, t0);
+    			append_dev(div1, form);
+    			append_dev(form, h3);
+    			append_dev(form, t2);
+    			append_dev(form, input);
+    			set_input_value(input, /*list*/ ctx[0]);
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[2]),
+    					listen_dev(div0, "click", self$1(/*handleSubmit*/ ctx[1]), false, false, false),
+    					listen_dev(input, "input", /*input_input_handler*/ ctx[2]),
     					listen_dev(form, "submit", prevent_default(/*handleSubmit*/ ctx[1]), false, true, false)
     				];
 
@@ -23049,14 +23059,14 @@ var app = (function () {
     			}
     		},
     		p: function update(ctx, [dirty]) {
-    			if (dirty & /*list*/ 1 && input0.value !== /*list*/ ctx[0]) {
-    				set_input_value(input0, /*list*/ ctx[0]);
+    			if (dirty & /*list*/ 1 && input.value !== /*list*/ ctx[0]) {
+    				set_input_value(input, /*list*/ ctx[0]);
     			}
     		},
     		i: noop$1,
     		o: noop$1,
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div);
+    			if (detaching) detach_dev(div1);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -23089,7 +23099,7 @@ var app = (function () {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Modal> was created with unknown prop '${key}'`);
     	});
 
-    	function input0_input_handler() {
+    	function input_input_handler() {
     		list = this.value;
     		$$invalidate(0, list);
     	}
@@ -23109,7 +23119,7 @@ var app = (function () {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [list, handleSubmit, input0_input_handler];
+    	return [list, handleSubmit, input_input_handler];
     }
 
     class Modal extends SvelteComponentDev {
@@ -24465,7 +24475,7 @@ var app = (function () {
     			img = element("img");
     			t0 = space();
     			p = element("p");
-    			p.textContent = "Svelte-Todo-App";
+    			p.textContent = "Currently: Online";
     			t2 = space();
     			div0 = element("div");
     			create_component(menubutton.$$.fragment);
@@ -24477,7 +24487,7 @@ var app = (function () {
     			attr_dev(p, "class", "title svelte-1gqp3mb");
     			add_location(p, file$4, 32, 1, 951);
     			attr_dev(div0, "class", "menu svelte-1gqp3mb");
-    			add_location(div0, file$4, 33, 1, 989);
+    			add_location(div0, file$4, 33, 1, 991);
     			attr_dev(div1, "class", "header svelte-1gqp3mb");
     			set_style(div1, "background-color", /*color*/ ctx[0]);
     			add_location(div1, file$4, 30, 0, 850);

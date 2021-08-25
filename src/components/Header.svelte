@@ -30,7 +30,7 @@
 
 <div class="header" style="background-color:{color};">
     <img id="img" src="{url}" alt="profile">
-	<p class="title">Svelte-Todo-App</p>
+	<p class="title">Currently: Online</p>
 	<div class="menu">
 		<MenuButton on:menu></MenuButton>
 	</div>
