@@ -1,49 +1,14 @@
 <script>
 	import { fly } from 'svelte/transition'
-	import { todoColorStore } from '../data/todoColorStore'
-	import { textColorStore } from '../data/textColorStore'
-	import { headerColorStore } from '../data/headerColorStore'
-	import { backgroundColorStore } from '../data/backgroundColorStore'
-	import SignoutButton from './SignoutButton.svelte'
+	import List from './List.svelte'
 </script>
 
 <div id="menu" in:fly="{{ y: -100, duration: 500 }}" out:fly="{{ x: 0, duration: 500 }}">
-	<div class="colorContainer">
-		<input bind:value={$backgroundColorStore} type="color">
-		<label for="background-color">Background Color</label>
-	</div>
-		
-	<div class="colorContainer">
-		<input bind:value={$headerColorStore} type="color">
-		<label for="header-color">Header Background Color</label>
-	</div>
-		
-	<div class="colorContainer">
-		<input bind:value={$todoColorStore} type="color">
-		<label for="todo-background-color">Todo Background Color</label>
-	</div>
-		
-	<div class="colorContainer">
-		<input bind:value={$textColorStore} type="color">
-		<label for="todo-text-color">Todo Text Color</label>
-	</div>
-
-	<div class="bottom-menu-container">
-		<div class="signout">
-			<SignoutButton></SignoutButton>
-		</div>
-		<div>
-			<img src="./img/settings.png" alt="">
-		</div>
-	</div>
-
+	<List/>
+	<img src="./img/settings.png" alt="">
 </div>
 
 <style>
-	img {
-		width: 50px;
-	}
-
 	#menu {
         position: absolute;
         background-color: white;
@@ -54,27 +19,27 @@
 		z-index: 2;
 		display: flex;
 		flex-direction: column;
-	}
-	.colorContainer {
-		display: flex;
-		border: 1px solid black;
-		height: 40px;
-	}
-	label {
-		margin-left: 20px;
-		margin-top: 8px;
-	}
-	input {
-		height: 100%;
-		width: 80px;
-		padding: 1px;
+		justify-content: flex-end;
+		align-items: flex-end;
 	}
 
-	.bottom-menu-container {
-		margin-top: auto;
-		display: flex;
-		justify-content: space-between;
+	img {
+		width: 50px;
+		top: auto;
+
+		margin-right: 30px;
+		margin-bottom: 30px;
 	}
+	@-moz-keyframes spin { 100% { -moz-transform: rotate(90deg); } }
+	@-webkit-keyframes spin { 100% { -webkit-transform: rotate(90deg); } }
+	@keyframes spin { 100% { -webkit-transform: rotate(90deg); transform:rotate(90deg); } }
+	img:hover {
+		cursor: pointer;
+		animation:spin 0.5s linear ;
+		-webkit-animation:spin 0.5s linear ;
+    	-moz-animation:spin 0.5s linear ;
+	}
+
 	
     @media screen and (max-width: 992px) {
         #menu {
@@ -83,10 +48,6 @@
 			height: 100%;
 			margin-left: 0%;
 			z-index: 2;
-		}
-
-		label {
-			margin-top: 8px;
 		}
 	}
 </style>
