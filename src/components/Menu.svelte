@@ -13,22 +13,21 @@
         position: absolute;
         background-color: white;
 		width: 20%;
-		height: 100%;
-		top: 0;
+		height: calc(100% - 55px);
+		top: 55px;
 		margin-left: 80%;
 		z-index: 2;
 		display: flex;
 		flex-direction: column;
-		justify-content: flex-end;
-		align-items: flex-end;
 	}
 
 	img {
 		width: 50px;
-		top: auto;
-
 		margin-right: 30px;
 		margin-bottom: 30px;
+		justify-self: flex-end;
+		align-self: flex-end;
+		margin-top: auto;
 	}
 	@-moz-keyframes spin { 100% { -moz-transform: rotate(90deg); } }
 	@-webkit-keyframes spin { 100% { -webkit-transform: rotate(90deg); } }
@@ -45,7 +44,6 @@
         #menu {
 			position: absolute;
 			width: 100%;
-			height: 100%;
 			margin-left: 0%;
 			z-index: 2;
 		}

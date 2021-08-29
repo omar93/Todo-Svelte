@@ -3,14 +3,15 @@
     import { todoStore } from '../data/todoStore'
     import uuid from 'uuid-v4'
     import dbHandler  from '../lib/firebaseDB'
+    import Modal from './Modal.svelte'
 
     export let todoTextLength
 
     let db = new dbHandler()
 
     let textField
-    let height
-    let width
+    let visable = false
+    let modal = false
 
     const removeAll = () => {todoStore.set([])}
     const addTodo = async e => {
@@ -26,53 +27,74 @@
         textField = ''
     }
 
+    const createNewList = () => {
+        modal = true
+    }
+
+    const handleNewList = e => {
+        console.log('list name: ',e.detail)
+        modal = false
+    }
+
 </script>
-
+{#if modal}
+    <Modal on:new-list={handleNewList}></Modal>
+{/if}
+{#if visable}
 <div id="parent">
-    <button class="clear" bind:clientWidth={width} on:click={removeAll} style="height:{height}px;">CLEAR</button>
     <form on:submit|self={addTodo}>
-        <input class="input" type="text" bind:value={textField} placeholder="Todo" style="height:{height}px;">
+        <input class="input" type="text" bind:value={textField} placeholder="Todo">
     </form>
-    <button bind:clientHeight={height} class="add" on:click={addTodo} style="width:{width}px;">➕</button>
-</div>
-
+    </div>
+    {:else}
+        <div id="button-container">
+            <div><span id="new-todo" on:click={() => visable = true}>➕</span></div>
+            <div><span id="new-todo" on:click={() => visable = true}>➕</span></div>
+            <div><img src="./img/new-list.png" alt="new list icon" on:click={createNewList}></div>
+        </div>
+    {/if}
 
 <style>
-    #parent {
+    form {
         width: 100%;
-        display: grid;
-        grid-template-columns: 70px 1fr 70px;
-        gap: 10px;
-        grid-template-areas:
-        'clear input add';
-    }
-    .clear {
-        grid-area: clear;
-        background-color: rgb(255, 0, 0);
-        color: white;
-        font-size: 1em;
-        text-align: center;
-        border: 1px solid black;
     }
     .input {
-        width: 100%;
-        grid-area: input;
         border:2px solid #dadada;
         border-radius:7px;
         margin-left: 1px;
     }
+    input[type="text"] 
+      {
+        width: 100%;
+        border: 1px solid #CCC;
+      }
     .input:focus {
         outline:rgb(5, 168, 5);
         border-color: rgb(5, 168, 5);
     }
-    .add {
-        grid-area: add;
-        background-color: white;
-        border: 1px solid black;
-        margin-left: 1.5px;
+
+    #button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
     }
-    button {
-        border-radius:7px;
+
+    #new-todo {
+        border-radius:50%;
+        width: 50px;
+        height: 50px;
+        font-size: 30px;
+        background-color: greenyellow;
+        border: 5px solid black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    img:hover { cursor: pointer; }
+    img {
+        object-fit: contain;
+        height: 40px;
     }
 
 </style>

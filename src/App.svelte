@@ -52,13 +52,12 @@
 <style>
 	#mainContainer {
 		display: grid;
-		grid-template-rows: 55px 1fr 20px 55px;
+		grid-template-rows: 55px 1fr 60px;
 		grid-template-columns: 20% 60% 20%;
 		height: 100vh;
 		grid-template-areas: 
 		'header	header	header'
 		'.	list	.'
-		'.	.	.'
 		'.	input	.';
 	}
 	#headerContainer {
@@ -89,7 +88,6 @@
 			grid-template-areas: 
 			'header'
 			'list'
-			'.'
 			'input';
 		}
 	}
