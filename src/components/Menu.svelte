@@ -10,12 +10,8 @@
 
 <style>
 	#menu {
-        position: absolute;
         background-color: white;
-		width: 20%;
-		height: calc(100% - 55px);
-		top: 55px;
-		margin-left: 80%;
+		height: 100%;
 		z-index: 2;
 		display: flex;
 		flex-direction: column;
@@ -46,6 +42,8 @@
 			width: 100%;
 			margin-left: 0%;
 			z-index: 2;
+			height: calc(100% - 55px);
+			top: 55px;
 		}
 	}
 </style>

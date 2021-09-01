@@ -1,14 +1,29 @@
 <script>
   import { createEventDispatcher } from 'svelte'
   const dispatch = createEventDispatcher()
-  let active = false
+
+  export let showClass = ''
+	$: innerWidth = 0
+
   const toggle = () => {
-    active = !active
     dispatch('menu')
+    if (innerWidth > 992) {
+      showClass = ''
+    } else if(innerWidth < 992 && showClass === 'change') {
+      showClass = ''
+    } else if (innerWidth < 992 && showClass === ''){
+      showClass = 'change'
+    }
+  }
+
+  const handleResize = () => {
+    if(innerWidth > 992) {
+      showClass = ''
+    }
   }
 </script>
-
-<div on:click={toggle} class="{active ? 'change' : ''} container">
+<svelte:window bind:innerWidth on:resize={handleResize}/>
+<div on:click={toggle} class="{showClass} container">
   <div class="bar1"></div>
   <div class="bar2"></div>
   <div class="bar3"></div>

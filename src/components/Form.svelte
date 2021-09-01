@@ -41,18 +41,18 @@
     <Modal on:new-list={handleNewList}></Modal>
 {/if}
 {#if visable}
-<div id="parent">
-    <form on:submit|self={addTodo}>
-        <input class="input" type="text" bind:value={textField} placeholder="Todo">
-    </form>
+    <div id="parent">
+        <form on:submit|self={addTodo}>
+            <input class="input" type="text" bind:value={textField} placeholder="Todo">
+        </form>
     </div>
-    {:else}
-        <div id="button-container">
-            <div><span id="new-todo" on:click={() => visable = true}>➕</span></div>
-            <div><span id="new-todo" on:click={() => visable = true}>➕</span></div>
-            <div><img src="./img/new-list.png" alt="new list icon" on:click={createNewList}></div>
-        </div>
-    {/if}
+{:else}
+    <div id="button-container">
+        <div><span id="new-todo" on:click={() => visable = true}>➕</span></div>
+        <div><span id="new-todo" on:click={() => visable = true}>➕</span></div>
+        <div><img src="./img/new-list.png" alt="new list icon" on:click={createNewList}></div>
+    </div>
+{/if}
 
 <style>
     form {
