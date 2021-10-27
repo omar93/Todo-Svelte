@@ -72,6 +72,7 @@
 		'menu	.	input';
 	}
 
+
 	#headerContainer {
 		display: none;
 	}

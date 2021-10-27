@@ -987,7 +987,7 @@ var app = (function () {
     const file$9 = "src\\components\\Todo.svelte";
 
     // (33:8) {#if isDone}
-    function create_if_block_1$2(ctx) {
+    function create_if_block_1$3(ctx) {
     	let span;
 
     	const block = {
@@ -1006,7 +1006,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_1$2.name,
+    		id: create_if_block_1$3.name,
     		type: "if",
     		source: "(33:8) {#if isDone}",
     		ctx
@@ -1072,7 +1072,7 @@ var app = (function () {
     }
 
     // (37:4) {#if editable}
-    function create_if_block$2(ctx) {
+    function create_if_block$3(ctx) {
     	let form;
     	let input;
     	let mounted;
@@ -1123,7 +1123,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block$2.name,
+    		id: create_if_block$3.name,
     		type: "if",
     		source: "(37:4) {#if editable}",
     		ctx
@@ -1146,10 +1146,10 @@ var app = (function () {
     	let current;
     	let mounted;
     	let dispose;
-    	let if_block0 = /*isDone*/ ctx[1] && create_if_block_1$2(ctx);
+    	let if_block0 = /*isDone*/ ctx[1] && create_if_block_1$3(ctx);
 
     	function select_block_type(ctx, dirty) {
-    		if (/*editable*/ ctx[4]) return create_if_block$2;
+    		if (/*editable*/ ctx[4]) return create_if_block$3;
     		return create_else_block$2;
     	}
 
@@ -1215,7 +1215,7 @@ var app = (function () {
     		p: function update(ctx, [dirty]) {
     			if (/*isDone*/ ctx[1]) {
     				if (if_block0) ; else {
-    					if_block0 = create_if_block_1$2(ctx);
+    					if_block0 = create_if_block_1$3(ctx);
     					if_block0.c();
     					if_block0.m(span0, null);
     				}
@@ -23107,21 +23107,145 @@ var app = (function () {
 
     function get_each_context$1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[6] = list[i];
+    	child_ctx[8] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[6] = list[i];
+    	child_ctx[11] = list[i];
     	return child_ctx;
     }
 
-    // (35:4) {#each $todoStore.filter(todo => !todo.isDone) as todo}
+    // (33:0) {#if todos.length != 0}
+    function create_if_block_1$2(ctx) {
+    	let div;
+    	let span;
+    	let t1;
+    	let hr;
+    	let t2;
+    	let ul;
+    	let current;
+    	let each_value_1 = /*todos*/ ctx[0];
+    	validate_each_argument(each_value_1);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value_1.length; i += 1) {
+    		each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+    	}
+
+    	const out = i => transition_out(each_blocks[i], 1, 1, () => {
+    		each_blocks[i] = null;
+    	});
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			span = element("span");
+    			span.textContent = "Needs to be done";
+    			t1 = space();
+    			hr = element("hr");
+    			t2 = space();
+    			ul = element("ul");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			add_location(span, file$8, 34, 8, 997);
+    			attr_dev(div, "class", "span-container svelte-1g4v5e7");
+    			add_location(div, file$8, 33, 4, 960);
+    			add_location(hr, file$8, 36, 4, 1042);
+    			attr_dev(ul, "class", "svelte-1g4v5e7");
+    			add_location(ul, file$8, 37, 4, 1051);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    			append_dev(div, span);
+    			insert_dev(target, t1, anchor);
+    			insert_dev(target, hr, anchor);
+    			insert_dev(target, t2, anchor);
+    			insert_dev(target, ul, anchor);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(ul, null);
+    			}
+
+    			current = true;
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*todos, removeChild, updateChild*/ 13) {
+    				each_value_1 = /*todos*/ ctx[0];
+    				validate_each_argument(each_value_1);
+    				let i;
+
+    				for (i = 0; i < each_value_1.length; i += 1) {
+    					const child_ctx = get_each_context_1(ctx, each_value_1, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    						transition_in(each_blocks[i], 1);
+    					} else {
+    						each_blocks[i] = create_each_block_1(child_ctx);
+    						each_blocks[i].c();
+    						transition_in(each_blocks[i], 1);
+    						each_blocks[i].m(ul, null);
+    					}
+    				}
+
+    				group_outros();
+
+    				for (i = each_value_1.length; i < each_blocks.length; i += 1) {
+    					out(i);
+    				}
+
+    				check_outros();
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+
+    			for (let i = 0; i < each_value_1.length; i += 1) {
+    				transition_in(each_blocks[i]);
+    			}
+
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			each_blocks = each_blocks.filter(Boolean);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				transition_out(each_blocks[i]);
+    			}
+
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			if (detaching) detach_dev(t1);
+    			if (detaching) detach_dev(hr);
+    			if (detaching) detach_dev(t2);
+    			if (detaching) detach_dev(ul);
+    			destroy_each(each_blocks, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_1$2.name,
+    		type: "if",
+    		source: "(33:0) {#if todos.length != 0}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (39:8) {#each todos as todo}
     function create_each_block_1(ctx) {
     	let todo;
     	let current;
-    	const todo_spread_levels = [/*todo*/ ctx[6]];
+    	const todo_spread_levels = [/*todo*/ ctx[11]];
     	let todo_props = {};
 
     	for (let i = 0; i < todo_spread_levels.length; i += 1) {
@@ -23129,8 +23253,8 @@ var app = (function () {
     	}
 
     	todo = new Todo({ props: todo_props, $$inline: true });
-    	todo.$on("remove", /*removeChild*/ ctx[1]);
-    	todo.$on("update", /*updateChild*/ ctx[2]);
+    	todo.$on("remove", /*removeChild*/ ctx[2]);
+    	todo.$on("update", /*updateChild*/ ctx[3]);
 
     	const block = {
     		c: function create() {
@@ -23141,8 +23265,8 @@ var app = (function () {
     			current = true;
     		},
     		p: function update(ctx, dirty) {
-    			const todo_changes = (dirty & /*$todoStore*/ 1)
-    			? get_spread_update(todo_spread_levels, [get_spread_object(/*todo*/ ctx[6])])
+    			const todo_changes = (dirty & /*todos*/ 1)
+    			? get_spread_update(todo_spread_levels, [get_spread_object(/*todo*/ ctx[11])])
     			: {};
 
     			todo.$set(todo_changes);
@@ -23165,18 +23289,142 @@ var app = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(35:4) {#each $todoStore.filter(todo => !todo.isDone) as todo}",
+    		source: "(39:8) {#each todos as todo}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (47:4) {#each $todoStore.filter(todo => todo.isDone) as todo}
+    // (45:0) {#if finishedTodos.length != 0}
+    function create_if_block$2(ctx) {
+    	let div;
+    	let span;
+    	let t1;
+    	let hr;
+    	let t2;
+    	let ul;
+    	let current;
+    	let each_value = /*finishedTodos*/ ctx[1];
+    	validate_each_argument(each_value);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
+    	}
+
+    	const out = i => transition_out(each_blocks[i], 1, 1, () => {
+    		each_blocks[i] = null;
+    	});
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			span = element("span");
+    			span.textContent = "Finished";
+    			t1 = space();
+    			hr = element("hr");
+    			t2 = space();
+    			ul = element("ul");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			add_location(span, file$8, 46, 8, 1280);
+    			attr_dev(div, "class", "span-container svelte-1g4v5e7");
+    			add_location(div, file$8, 45, 4, 1243);
+    			add_location(hr, file$8, 49, 4, 1318);
+    			attr_dev(ul, "class", "svelte-1g4v5e7");
+    			add_location(ul, file$8, 50, 4, 1327);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    			append_dev(div, span);
+    			insert_dev(target, t1, anchor);
+    			insert_dev(target, hr, anchor);
+    			insert_dev(target, t2, anchor);
+    			insert_dev(target, ul, anchor);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(ul, null);
+    			}
+
+    			current = true;
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*finishedTodos, removeChild, updateChild*/ 14) {
+    				each_value = /*finishedTodos*/ ctx[1];
+    				validate_each_argument(each_value);
+    				let i;
+
+    				for (i = 0; i < each_value.length; i += 1) {
+    					const child_ctx = get_each_context$1(ctx, each_value, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    						transition_in(each_blocks[i], 1);
+    					} else {
+    						each_blocks[i] = create_each_block$1(child_ctx);
+    						each_blocks[i].c();
+    						transition_in(each_blocks[i], 1);
+    						each_blocks[i].m(ul, null);
+    					}
+    				}
+
+    				group_outros();
+
+    				for (i = each_value.length; i < each_blocks.length; i += 1) {
+    					out(i);
+    				}
+
+    				check_outros();
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+
+    			for (let i = 0; i < each_value.length; i += 1) {
+    				transition_in(each_blocks[i]);
+    			}
+
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			each_blocks = each_blocks.filter(Boolean);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				transition_out(each_blocks[i]);
+    			}
+
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			if (detaching) detach_dev(t1);
+    			if (detaching) detach_dev(hr);
+    			if (detaching) detach_dev(t2);
+    			if (detaching) detach_dev(ul);
+    			destroy_each(each_blocks, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block$2.name,
+    		type: "if",
+    		source: "(45:0) {#if finishedTodos.length != 0}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (52:8) {#each finishedTodos as finished}
     function create_each_block$1(ctx) {
     	let todo;
     	let current;
-    	const todo_spread_levels = [/*todo*/ ctx[6]];
+    	const todo_spread_levels = [/*finished*/ ctx[8]];
     	let todo_props = {};
 
     	for (let i = 0; i < todo_spread_levels.length; i += 1) {
@@ -23184,8 +23432,8 @@ var app = (function () {
     	}
 
     	todo = new Todo({ props: todo_props, $$inline: true });
-    	todo.$on("remove", /*removeChild*/ ctx[1]);
-    	todo.$on("update", /*updateChild*/ ctx[2]);
+    	todo.$on("remove", /*removeChild*/ ctx[2]);
+    	todo.$on("update", /*updateChild*/ ctx[3]);
 
     	const block = {
     		c: function create() {
@@ -23196,8 +23444,8 @@ var app = (function () {
     			current = true;
     		},
     		p: function update(ctx, dirty) {
-    			const todo_changes = (dirty & /*$todoStore*/ 1)
-    			? get_spread_update(todo_spread_levels, [get_spread_object(/*todo*/ ctx[6])])
+    			const todo_changes = (dirty & /*finishedTodos*/ 2)
+    			? get_spread_update(todo_spread_levels, [get_spread_object(/*finished*/ ctx[8])])
     			: {};
 
     			todo.$set(todo_changes);
@@ -23220,7 +23468,7 @@ var app = (function () {
     		block,
     		id: create_each_block$1.name,
     		type: "each",
-    		source: "(47:4) {#each $todoStore.filter(todo => todo.isDone) as todo}",
+    		source: "(52:8) {#each finishedTodos as finished}",
     		ctx
     	});
 
@@ -23228,221 +23476,101 @@ var app = (function () {
     }
 
     function create_fragment$8(ctx) {
-    	let div0;
-    	let span0;
-    	let t1;
-    	let hr0;
-    	let t2;
-    	let ul0;
-    	let t3;
+    	let t0;
     	let br;
-    	let t4;
-    	let div1;
-    	let span1;
-    	let t6;
-    	let hr1;
-    	let t7;
-    	let ul1;
+    	let t1;
+    	let if_block1_anchor;
     	let current;
-    	let each_value_1 = /*$todoStore*/ ctx[0].filter(func);
-    	validate_each_argument(each_value_1);
-    	let each_blocks_1 = [];
-
-    	for (let i = 0; i < each_value_1.length; i += 1) {
-    		each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
-    	}
-
-    	const out = i => transition_out(each_blocks_1[i], 1, 1, () => {
-    		each_blocks_1[i] = null;
-    	});
-
-    	let each_value = /*$todoStore*/ ctx[0].filter(func_1);
-    	validate_each_argument(each_value);
-    	let each_blocks = [];
-
-    	for (let i = 0; i < each_value.length; i += 1) {
-    		each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
-    	}
-
-    	const out_1 = i => transition_out(each_blocks[i], 1, 1, () => {
-    		each_blocks[i] = null;
-    	});
+    	let if_block0 = /*todos*/ ctx[0].length != 0 && create_if_block_1$2(ctx);
+    	let if_block1 = /*finishedTodos*/ ctx[1].length != 0 && create_if_block$2(ctx);
 
     	const block = {
     		c: function create() {
-    			div0 = element("div");
-    			span0 = element("span");
-    			span0.textContent = "Needs to be done";
-    			t1 = space();
-    			hr0 = element("hr");
-    			t2 = space();
-    			ul0 = element("ul");
-
-    			for (let i = 0; i < each_blocks_1.length; i += 1) {
-    				each_blocks_1[i].c();
-    			}
-
-    			t3 = space();
+    			if (if_block0) if_block0.c();
+    			t0 = space();
     			br = element("br");
-    			t4 = space();
-    			div1 = element("div");
-    			span1 = element("span");
-    			span1.textContent = "Finished";
-    			t6 = space();
-    			hr1 = element("hr");
-    			t7 = space();
-    			ul1 = element("ul");
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].c();
-    			}
-
-    			add_location(span0, file$8, 30, 4, 847);
-    			attr_dev(div0, "class", "span-container svelte-1g4v5e7");
-    			add_location(div0, file$8, 29, 0, 814);
-    			add_location(hr0, file$8, 32, 0, 884);
-    			attr_dev(ul0, "class", "svelte-1g4v5e7");
-    			add_location(ul0, file$8, 33, 0, 889);
-    			add_location(br, file$8, 39, 0, 1053);
-    			add_location(span1, file$8, 41, 4, 1091);
-    			attr_dev(div1, "class", "span-container svelte-1g4v5e7");
-    			add_location(div1, file$8, 40, 0, 1058);
-    			add_location(hr1, file$8, 44, 0, 1121);
-    			attr_dev(ul1, "class", "svelte-1g4v5e7");
-    			add_location(ul1, file$8, 45, 0, 1126);
+    			t1 = space();
+    			if (if_block1) if_block1.c();
+    			if_block1_anchor = empty();
+    			add_location(br, file$8, 43, 0, 1202);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div0, anchor);
-    			append_dev(div0, span0);
-    			insert_dev(target, t1, anchor);
-    			insert_dev(target, hr0, anchor);
-    			insert_dev(target, t2, anchor);
-    			insert_dev(target, ul0, anchor);
-
-    			for (let i = 0; i < each_blocks_1.length; i += 1) {
-    				each_blocks_1[i].m(ul0, null);
-    			}
-
-    			insert_dev(target, t3, anchor);
+    			if (if_block0) if_block0.m(target, anchor);
+    			insert_dev(target, t0, anchor);
     			insert_dev(target, br, anchor);
-    			insert_dev(target, t4, anchor);
-    			insert_dev(target, div1, anchor);
-    			append_dev(div1, span1);
-    			insert_dev(target, t6, anchor);
-    			insert_dev(target, hr1, anchor);
-    			insert_dev(target, t7, anchor);
-    			insert_dev(target, ul1, anchor);
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(ul1, null);
-    			}
-
+    			insert_dev(target, t1, anchor);
+    			if (if_block1) if_block1.m(target, anchor);
+    			insert_dev(target, if_block1_anchor, anchor);
     			current = true;
     		},
     		p: function update(ctx, [dirty]) {
-    			if (dirty & /*$todoStore, removeChild, updateChild*/ 7) {
-    				each_value_1 = /*$todoStore*/ ctx[0].filter(func);
-    				validate_each_argument(each_value_1);
-    				let i;
+    			if (/*todos*/ ctx[0].length != 0) {
+    				if (if_block0) {
+    					if_block0.p(ctx, dirty);
 
-    				for (i = 0; i < each_value_1.length; i += 1) {
-    					const child_ctx = get_each_context_1(ctx, each_value_1, i);
-
-    					if (each_blocks_1[i]) {
-    						each_blocks_1[i].p(child_ctx, dirty);
-    						transition_in(each_blocks_1[i], 1);
-    					} else {
-    						each_blocks_1[i] = create_each_block_1(child_ctx);
-    						each_blocks_1[i].c();
-    						transition_in(each_blocks_1[i], 1);
-    						each_blocks_1[i].m(ul0, null);
+    					if (dirty & /*todos*/ 1) {
+    						transition_in(if_block0, 1);
     					}
+    				} else {
+    					if_block0 = create_if_block_1$2(ctx);
+    					if_block0.c();
+    					transition_in(if_block0, 1);
+    					if_block0.m(t0.parentNode, t0);
     				}
-
+    			} else if (if_block0) {
     				group_outros();
 
-    				for (i = each_value_1.length; i < each_blocks_1.length; i += 1) {
-    					out(i);
-    				}
+    				transition_out(if_block0, 1, 1, () => {
+    					if_block0 = null;
+    				});
 
     				check_outros();
     			}
 
-    			if (dirty & /*$todoStore, removeChild, updateChild*/ 7) {
-    				each_value = /*$todoStore*/ ctx[0].filter(func_1);
-    				validate_each_argument(each_value);
-    				let i;
+    			if (/*finishedTodos*/ ctx[1].length != 0) {
+    				if (if_block1) {
+    					if_block1.p(ctx, dirty);
 
-    				for (i = 0; i < each_value.length; i += 1) {
-    					const child_ctx = get_each_context$1(ctx, each_value, i);
-
-    					if (each_blocks[i]) {
-    						each_blocks[i].p(child_ctx, dirty);
-    						transition_in(each_blocks[i], 1);
-    					} else {
-    						each_blocks[i] = create_each_block$1(child_ctx);
-    						each_blocks[i].c();
-    						transition_in(each_blocks[i], 1);
-    						each_blocks[i].m(ul1, null);
+    					if (dirty & /*finishedTodos*/ 2) {
+    						transition_in(if_block1, 1);
     					}
+    				} else {
+    					if_block1 = create_if_block$2(ctx);
+    					if_block1.c();
+    					transition_in(if_block1, 1);
+    					if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
     				}
-
+    			} else if (if_block1) {
     				group_outros();
 
-    				for (i = each_value.length; i < each_blocks.length; i += 1) {
-    					out_1(i);
-    				}
+    				transition_out(if_block1, 1, 1, () => {
+    					if_block1 = null;
+    				});
 
     				check_outros();
     			}
     		},
     		i: function intro(local) {
     			if (current) return;
-
-    			for (let i = 0; i < each_value_1.length; i += 1) {
-    				transition_in(each_blocks_1[i]);
-    			}
-
-    			for (let i = 0; i < each_value.length; i += 1) {
-    				transition_in(each_blocks[i]);
-    			}
-
+    			transition_in(if_block0);
+    			transition_in(if_block1);
     			current = true;
     		},
     		o: function outro(local) {
-    			each_blocks_1 = each_blocks_1.filter(Boolean);
-
-    			for (let i = 0; i < each_blocks_1.length; i += 1) {
-    				transition_out(each_blocks_1[i]);
-    			}
-
-    			each_blocks = each_blocks.filter(Boolean);
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				transition_out(each_blocks[i]);
-    			}
-
+    			transition_out(if_block0);
+    			transition_out(if_block1);
     			current = false;
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div0);
-    			if (detaching) detach_dev(t1);
-    			if (detaching) detach_dev(hr0);
-    			if (detaching) detach_dev(t2);
-    			if (detaching) detach_dev(ul0);
-    			destroy_each(each_blocks_1, detaching);
-    			if (detaching) detach_dev(t3);
+    			if (if_block0) if_block0.d(detaching);
+    			if (detaching) detach_dev(t0);
     			if (detaching) detach_dev(br);
-    			if (detaching) detach_dev(t4);
-    			if (detaching) detach_dev(div1);
-    			if (detaching) detach_dev(t6);
-    			if (detaching) detach_dev(hr1);
-    			if (detaching) detach_dev(t7);
-    			if (detaching) detach_dev(ul1);
-    			destroy_each(each_blocks, detaching);
+    			if (detaching) detach_dev(t1);
+    			if (if_block1) if_block1.d(detaching);
+    			if (detaching) detach_dev(if_block1_anchor);
     		}
     	};
 
@@ -23457,16 +23585,15 @@ var app = (function () {
     	return block;
     }
 
-    const func = todo => !todo.isDone;
-    const func_1 = todo => todo.isDone;
-
     function instance$8($$self, $$props, $$invalidate) {
+    	let todos;
+    	let finishedTodos;
     	let $todoStore;
     	let $appStore;
     	validate_store(todoStore, "todoStore");
-    	component_subscribe($$self, todoStore, $$value => $$invalidate(0, $todoStore = $$value));
+    	component_subscribe($$self, todoStore, $$value => $$invalidate(4, $todoStore = $$value));
     	validate_store(appStore, "appStore");
-    	component_subscribe($$self, appStore, $$value => $$invalidate(4, $appStore = $$value));
+    	component_subscribe($$self, appStore, $$value => $$invalidate(6, $appStore = $$value));
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("TodoList", slots, []);
     	let db = new dbhandler();
@@ -23503,19 +23630,33 @@ var app = (function () {
     		removeChild,
     		updateChild,
     		$todoStore,
-    		$appStore
+    		$appStore,
+    		todos,
+    		finishedTodos
     	});
 
     	$$self.$inject_state = $$props => {
     		if ("db" in $$props) db = $$props.db;
     		if ("userID" in $$props) userID = $$props.userID;
+    		if ("todos" in $$props) $$invalidate(0, todos = $$props.todos);
+    		if ("finishedTodos" in $$props) $$invalidate(1, finishedTodos = $$props.finishedTodos);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [$todoStore, removeChild, updateChild];
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*$todoStore*/ 16) {
+    			$$invalidate(0, todos = $todoStore.filter(todo => !todo.isDone));
+    		}
+
+    		if ($$self.$$.dirty & /*$todoStore*/ 16) {
+    			$$invalidate(1, finishedTodos = $todoStore.filter(todo => todo.isDone));
+    		}
+    	};
+
+    	return [todos, finishedTodos, removeChild, updateChild, $todoStore];
     }
 
     class TodoList extends SvelteComponentDev {
@@ -25193,19 +25334,19 @@ var app = (function () {
     			div3 = element("div");
     			create_component(form.$$.fragment);
     			attr_dev(div0, "id", "headerContainer");
-    			attr_dev(div0, "class", "svelte-10kganq");
+    			attr_dev(div0, "class", "svelte-1l00k8i");
     			add_location(div0, file, 40, 1, 1032);
     			attr_dev(div1, "id", "menuContainer");
-    			attr_dev(div1, "class", "svelte-10kganq");
+    			attr_dev(div1, "class", "svelte-1l00k8i");
     			add_location(div1, file, 44, 1, 1106);
     			attr_dev(div2, "id", "listContainer");
-    			attr_dev(div2, "class", "svelte-10kganq");
+    			attr_dev(div2, "class", "svelte-1l00k8i");
     			add_location(div2, file, 51, 1, 1189);
     			attr_dev(div3, "id", "inputContainer");
-    			attr_dev(div3, "class", "svelte-10kganq");
+    			attr_dev(div3, "class", "svelte-1l00k8i");
     			add_location(div3, file, 55, 1, 1248);
     			attr_dev(div4, "id", "mainContainer");
-    			attr_dev(div4, "class", "svelte-10kganq");
+    			attr_dev(div4, "class", "svelte-1l00k8i");
     			add_location(div4, file, 39, 0, 1006);
     		},
     		m: function mount(target, anchor) {
