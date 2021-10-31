@@ -1,30 +1,12 @@
 <script>
-	import firebase from 'firebase/app'
-	import 'firebase/auth'
-	import dbhandler from '../lib/firebaseDB'
 	import MenuButton from './MenuButton.svelte'
-	import { idStore } from '../data/idStore'
 	import { appStore } from '../data/appStore'
 	import { headerColorStore } from '../data/headerColorStore'
 
-	let db = new dbhandler()
 	let color,url,app
 
 	headerColorStore.subscribe(col => color = col)
 	appStore.subscribe(data => app = data)
-
-	firebase.auth().onAuthStateChanged(async Currentuser => {
-		if (Currentuser) {
-			idStore.set(Currentuser.uid)
-			db.checkUser(firebase.auth().currentUser)
-			url = Currentuser.photoURL
-			localStorage.setItem('uid', Currentuser.uid)
-			if(app === 'online') db.ListenToChanges(Currentuser.uid)
-		} else {
-			console.log('You are offline, no syncing availabe')
-			url = './profile.jpg'
-		}
-	})
 
 </script>
 

@@ -17,7 +17,9 @@
 <div id="list-container">
     <ul>
         {#each lists as list}
-            <li>{list.name}</li>
+            <li>
+                <ListItem {list}/>
+            </li>
         {/each}
     </ul>
 </div>
@@ -28,16 +30,10 @@
         height: 100%;
         margin: auto;
     }
+    
     ul {
         list-style: none;
         padding: 0;
         margin: 0;
-        
-    }
-    li {
-        font-size: 40px;
-        padding: 0.5em;
-        text-align: center;
-        border-bottom: black 1px solid;
     }
 </style>

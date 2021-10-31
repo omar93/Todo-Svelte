@@ -1,10 +1,8 @@
 <script>
-	// import './lib/sw-install'
 	import { onMount } from 'svelte'
 	import MenuButton from './components/MenuButton.svelte'
 	import TodoList from './components/TodoList.svelte'
-	import Welcome from './components/Welcome.svelte'
-	import Form from './components/Form.svelte'
+	import NewTodo from './components/newTodo.svelte'
 	import Menu from './components/Menu.svelte'
 	
 	import { backgroundColorStore } from './data/backgroundColorStore'
@@ -14,7 +12,6 @@
 
 	onMount(() => {if(innerWidth > 992) menuVisable = true})
 
-	let todoTextLength = 80
 	let menuVisable = false
 	let choice
 
@@ -33,10 +30,6 @@
 </script>
 <svelte:window bind:innerWidth on:resize={handleResize}/>
 
-{#if choice === 'new'}
-	<Welcome></Welcome>
-{:else}
-
 <div id="mainContainer">
 	<div id="headerContainer">
 		<MenuButton on:menu={toggleMenu}/>
@@ -46,7 +39,6 @@
 		{#if menuVisable}
 			<Menu></Menu>
 		{/if}
-		
 	</div>
 
 	<div id="listContainer">
@@ -54,12 +46,10 @@
 	</div>
 
 	<div id="inputContainer">
-		<Form {todoTextLength}></Form>
+		<NewTodo/>
 	</div>
 
 </div>
-
-{/if}
 
 <style>
 	#mainContainer {

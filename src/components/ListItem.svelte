@@ -13,8 +13,9 @@
 <style>
     #list-container {
         font-size: 40px;
-        padding: 1em;
+        padding: 0.5em;
         text-align: center;
         border-bottom: black 1px solid;
+        color: red;
     }
 </style>
