@@ -16,14 +16,6 @@
 </div>
 
 <style>
-    #black {
-        background-color: black;
-        width: 100%;
-        height: 100%;
-        opacity: 0.5;
-        position: absolute;
-    }
-
     #modal-container {
         position: absolute;
         left: 0;
@@ -36,14 +28,19 @@
         z-index: 3;
     }
 
+    #black {
+        background-color: black;
+        width: 100%;
+        height: 100%;
+        opacity: 0.5;
+        position: absolute;
+    }
+
     form {
-        display: flex;
+        border: solid black 1px;
         flex-direction: column;
         background-color: white;
         z-index: 4;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         padding: 3em;
         border-radius: 25px;
         opacity: 1;

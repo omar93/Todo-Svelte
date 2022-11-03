@@ -1,6 +1,7 @@
 <script>
     import { appStore } from '../data/appStore'
     import { todoStore } from '../data/todoStore'
+    import { todoListStore } from '../data/todoListStore'
     import uuid from 'uuid-v4'
     import dbHandler  from '../lib/firebaseDB'
     import Modal from './Modal.svelte'
@@ -32,8 +33,9 @@
     }
 
     const handleNewList = e => {
-        console.log('list name: ',e.detail)
+        let newList = e.detail
         modal = false
+        todoListStore.update(orignalList => [...orignalList, {'name':newList, 'id':uuid(), todos:[]}])
     }
 
 </script>
@@ -48,7 +50,6 @@
     </div>
 {:else}
     <div id="button-container">
-        <div><span id="new-todo" on:click={() => visable = true}>➕</span></div>
         <div><span id="new-todo" on:click={() => visable = true}>➕</span></div>
         <div><img src="./img/new-list.png" alt="new list icon" on:click={createNewList}></div>
     </div>

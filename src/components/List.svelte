@@ -1,7 +1,11 @@
 <script>
     import ListItem from './ListItem.svelte'
-    let lists = [
-        {
+    import { todoListStore } from '../data/todoListStore'
+    let lists = []
+    todoListStore.subscribe(data => lists = data)
+    /**
+     * 
+     *  @param {string} listName
             'name':'lista1',
             'id':'abc123',
             'todos':['handla','fiska','äta']
@@ -12,6 +16,7 @@
             'todos':['handla','fiska','äta','tvätta kläder']
         }
     ]
+    */
 </script>
 
 <div id="list-container">

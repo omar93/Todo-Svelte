@@ -13,7 +13,7 @@
 <div class="welcome">
     <p>Welcome</p>
     <div class="online">
-        <p>Sigin to google to synd your todos across your devices</p>
+        <p>Sigin to google to sync your todos across your devices</p>
         <GoogleSignin></GoogleSignin>
     </div>
     <div class="offline">
