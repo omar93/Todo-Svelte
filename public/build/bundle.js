@@ -31,6 +31,14 @@ var app = (function () {
     function safe_not_equal(a, b) {
         return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
     }
+    let src_url_equal_anchor;
+    function src_url_equal(element_src, url) {
+        if (!src_url_equal_anchor) {
+            src_url_equal_anchor = document.createElement('a');
+        }
+        src_url_equal_anchor.href = url;
+        return element_src === src_url_equal_anchor.href;
+    }
     function is_empty(obj) {
         return Object.keys(obj).length === 0;
     }
@@ -49,9 +57,13 @@ var app = (function () {
     function component_subscribe(component, store, callback) {
         component.$$.on_destroy.push(subscribe(store, callback));
     }
-    function set_store_value(store, ret, value = ret) {
+    function set_store_value(store, ret, value) {
         store.set(value);
         return ret;
+    }
+    function split_css_unit(value) {
+        const split = typeof value === 'string' && value.match(/^\s*(-?[\d.]+)([^\s]*)\s*$/);
+        return split ? [parseFloat(split[1]), split[2] || 'px'] : [value, 'px'];
     }
 
     const is_client = typeof window !== 'undefined';
@@ -89,14 +101,39 @@ var app = (function () {
         };
     }
 
+    const globals = (typeof window !== 'undefined'
+        ? window
+        : typeof globalThis !== 'undefined'
+            ? globalThis
+            : global);
     function append(target, node) {
         target.appendChild(node);
+    }
+    function get_root_for_style(node) {
+        if (!node)
+            return document;
+        const root = node.getRootNode ? node.getRootNode() : node.ownerDocument;
+        if (root && root.host) {
+            return root;
+        }
+        return node.ownerDocument;
+    }
+    function append_empty_stylesheet(node) {
+        const style_element = element('style');
+        append_stylesheet(get_root_for_style(node), style_element);
+        return style_element.sheet;
+    }
+    function append_stylesheet(node, style) {
+        append(node.head || node, style);
+        return style.sheet;
     }
     function insert(target, node, anchor) {
         target.insertBefore(node, anchor || null);
     }
     function detach(node) {
-        node.parentNode.removeChild(node);
+        if (node.parentNode) {
+            node.parentNode.removeChild(node);
+        }
     }
     function destroy_each(iterations, detaching) {
         for (let i = 0; i < iterations.length; i += 1) {
@@ -147,15 +184,22 @@ var app = (function () {
         input.value = value == null ? '' : value;
     }
     function set_style(node, key, value, important) {
-        node.style.setProperty(key, value, important ? 'important' : '');
+        if (value == null) {
+            node.style.removeProperty(key);
+        }
+        else {
+            node.style.setProperty(key, value, important ? 'important' : '');
+        }
     }
-    function custom_event(type, detail) {
+    function custom_event(type, detail, { bubbles = false, cancelable = false } = {}) {
         const e = document.createEvent('CustomEvent');
-        e.initCustomEvent(type, false, false, detail);
+        e.initCustomEvent(type, bubbles, cancelable, detail);
         return e;
     }
 
-    const active_docs = new Set();
+    // we need to store the information for multiple documents because a Svelte application could also contain iframes
+    // https://github.com/sveltejs/svelte/issues/3624
+    const managed_styles = new Map();
     let active = 0;
     // https://github.com/darkskyapp/string-hash/blob/master/index.js
     function hash(str) {
@@ -164,6 +208,11 @@ var app = (function () {
         while (i--)
             hash = ((hash << 5) - hash) ^ str.charCodeAt(i);
         return hash >>> 0;
+    }
+    function create_style_information(doc, node) {
+        const info = { stylesheet: append_empty_stylesheet(node), rules: {} };
+        managed_styles.set(doc, info);
+        return info;
     }
     function create_rule(node, a, b, duration, delay, ease, fn, uid = 0) {
         const step = 16.666 / duration;
@@ -174,12 +223,10 @@ var app = (function () {
         }
         const rule = keyframes + `100% {${fn(b, 1 - b)}}\n}`;
         const name = `__svelte_${hash(rule)}_${uid}`;
-        const doc = node.ownerDocument;
-        active_docs.add(doc);
-        const stylesheet = doc.__svelte_stylesheet || (doc.__svelte_stylesheet = doc.head.appendChild(element('style')).sheet);
-        const current_rules = doc.__svelte_rules || (doc.__svelte_rules = {});
-        if (!current_rules[name]) {
-            current_rules[name] = true;
+        const doc = get_root_for_style(node);
+        const { stylesheet, rules } = managed_styles.get(doc) || create_style_information(doc, node);
+        if (!rules[name]) {
+            rules[name] = true;
             stylesheet.insertRule(`@keyframes ${name} ${rule}`, stylesheet.cssRules.length);
         }
         const animation = node.style.animation || '';
@@ -205,14 +252,13 @@ var app = (function () {
         raf(() => {
             if (active)
                 return;
-            active_docs.forEach(doc => {
-                const stylesheet = doc.__svelte_stylesheet;
-                let i = stylesheet.cssRules.length;
-                while (i--)
-                    stylesheet.deleteRule(i);
-                doc.__svelte_rules = {};
+            managed_styles.forEach(info => {
+                const { ownerNode } = info.stylesheet;
+                // there is no ownerNode if it runs on jsdom.
+                if (ownerNode)
+                    detach(ownerNode);
             });
-            active_docs.clear();
+            managed_styles.clear();
         });
     }
 
@@ -225,29 +271,52 @@ var app = (function () {
             throw new Error('Function called outside component initialization');
         return current_component;
     }
+    /**
+     * The `onMount` function schedules a callback to run as soon as the component has been mounted to the DOM.
+     * It must be called during the component's initialisation (but doesn't need to live *inside* the component;
+     * it can be called from an external module).
+     *
+     * `onMount` does not run inside a [server-side component](/docs#run-time-server-side-component-api).
+     *
+     * https://svelte.dev/docs#run-time-svelte-onmount
+     */
     function onMount(fn) {
         get_current_component().$$.on_mount.push(fn);
     }
+    /**
+     * Creates an event dispatcher that can be used to dispatch [component events](/docs#template-syntax-component-directives-on-eventname).
+     * Event dispatchers are functions that can take two arguments: `name` and `detail`.
+     *
+     * Component events created with `createEventDispatcher` create a
+     * [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent).
+     * These events do not [bubble](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Building_blocks/Events#Event_bubbling_and_capture).
+     * The `detail` argument corresponds to the [CustomEvent.detail](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/detail)
+     * property and can contain any type of data.
+     *
+     * https://svelte.dev/docs#run-time-svelte-createeventdispatcher
+     */
     function createEventDispatcher() {
         const component = get_current_component();
-        return (type, detail) => {
+        return (type, detail, { cancelable = false } = {}) => {
             const callbacks = component.$$.callbacks[type];
             if (callbacks) {
                 // TODO are there situations where events could be dispatched
                 // in a server (non-DOM) environment?
-                const event = custom_event(type, detail);
+                const event = custom_event(type, detail, { cancelable });
                 callbacks.slice().forEach(fn => {
                     fn.call(component, event);
                 });
+                return !event.defaultPrevented;
             }
+            return true;
         };
     }
 
     const dirty_components = [];
     const binding_callbacks = [];
-    const render_callbacks = [];
+    let render_callbacks = [];
     const flush_callbacks = [];
-    const resolved_promise = Promise.resolve();
+    const resolved_promise = /* @__PURE__ */ Promise.resolve();
     let update_scheduled = false;
     function schedule_update() {
         if (!update_scheduled) {
@@ -258,22 +327,54 @@ var app = (function () {
     function add_render_callback(fn) {
         render_callbacks.push(fn);
     }
-    let flushing = false;
+    // flush() calls callbacks in this order:
+    // 1. All beforeUpdate callbacks, in order: parents before children
+    // 2. All bind:this callbacks, in reverse order: children before parents.
+    // 3. All afterUpdate callbacks, in order: parents before children. EXCEPT
+    //    for afterUpdates called during the initial onMount, which are called in
+    //    reverse order: children before parents.
+    // Since callbacks might update component values, which could trigger another
+    // call to flush(), the following steps guard against this:
+    // 1. During beforeUpdate, any updated components will be added to the
+    //    dirty_components array and will cause a reentrant call to flush(). Because
+    //    the flush index is kept outside the function, the reentrant call will pick
+    //    up where the earlier call left off and go through all dirty components. The
+    //    current_component value is saved and restored so that the reentrant call will
+    //    not interfere with the "parent" flush() call.
+    // 2. bind:this callbacks cannot trigger new flush() calls.
+    // 3. During afterUpdate, any updated components will NOT have their afterUpdate
+    //    callback called a second time; the seen_callbacks set, outside the flush()
+    //    function, guarantees this behavior.
     const seen_callbacks = new Set();
+    let flushidx = 0; // Do *not* move this inside the flush() function
     function flush() {
-        if (flushing)
+        // Do not reenter flush while dirty components are updated, as this can
+        // result in an infinite loop. Instead, let the inner flush handle it.
+        // Reentrancy is ok afterwards for bindings etc.
+        if (flushidx !== 0) {
             return;
-        flushing = true;
+        }
+        const saved_component = current_component;
         do {
             // first, call beforeUpdate functions
             // and update components
-            for (let i = 0; i < dirty_components.length; i += 1) {
-                const component = dirty_components[i];
-                set_current_component(component);
-                update(component.$$);
+            try {
+                while (flushidx < dirty_components.length) {
+                    const component = dirty_components[flushidx];
+                    flushidx++;
+                    set_current_component(component);
+                    update(component.$$);
+                }
+            }
+            catch (e) {
+                // reset dirty state to not end up in a deadlocked state and then rethrow
+                dirty_components.length = 0;
+                flushidx = 0;
+                throw e;
             }
             set_current_component(null);
             dirty_components.length = 0;
+            flushidx = 0;
             while (binding_callbacks.length)
                 binding_callbacks.pop()();
             // then, once components are updated, call
@@ -293,8 +394,8 @@ var app = (function () {
             flush_callbacks.pop()();
         }
         update_scheduled = false;
-        flushing = false;
         seen_callbacks.clear();
+        set_current_component(saved_component);
     }
     function update($$) {
         if ($$.fragment !== null) {
@@ -305,6 +406,16 @@ var app = (function () {
             $$.fragment && $$.fragment.p($$.ctx, dirty);
             $$.after_update.forEach(add_render_callback);
         }
+    }
+    /**
+     * Useful for example to execute remaining `afterUpdate` callbacks before executing `destroy`.
+     */
+    function flush_render_callbacks(fns) {
+        const filtered = [];
+        const targets = [];
+        render_callbacks.forEach((c) => fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c));
+        targets.forEach((c) => c());
+        render_callbacks = filtered;
     }
 
     let promise;
@@ -356,10 +467,14 @@ var app = (function () {
             });
             block.o(local);
         }
+        else if (callback) {
+            callback();
+        }
     }
     const null_transition = { duration: 0 };
     function create_in_transition(node, fn, params) {
-        let config = fn(node, params);
+        const options = { direction: 'in' };
+        let config = fn(node, params, options);
         let running = false;
         let animation_name;
         let task;
@@ -400,9 +515,10 @@ var app = (function () {
             start() {
                 if (started)
                     return;
+                started = true;
                 delete_rule(node);
                 if (is_function(config)) {
-                    config = config();
+                    config = config(options);
                     wait().then(go);
                 }
                 else {
@@ -421,7 +537,8 @@ var app = (function () {
         };
     }
     function create_out_transition(node, fn, params) {
-        let config = fn(node, params);
+        const options = { direction: 'out' };
+        let config = fn(node, params, options);
         let running = true;
         let animation_name;
         const group = outros;
@@ -456,7 +573,7 @@ var app = (function () {
         if (is_function(config)) {
             wait().then(() => {
                 // @ts-ignore
-                config = config();
+                config = config(options);
                 go();
             });
         }
@@ -476,12 +593,6 @@ var app = (function () {
             }
         };
     }
-
-    const globals = (typeof window !== 'undefined'
-        ? window
-        : typeof globalThis !== 'undefined'
-            ? globalThis
-            : global);
 
     function get_spread_update(levels, updates) {
         const update = {};
@@ -523,14 +634,17 @@ var app = (function () {
         block && block.c();
     }
     function mount_component(component, target, anchor, customElement) {
-        const { fragment, on_mount, on_destroy, after_update } = component.$$;
+        const { fragment, after_update } = component.$$;
         fragment && fragment.m(target, anchor);
         if (!customElement) {
             // onMount happens before the initial afterUpdate
             add_render_callback(() => {
-                const new_on_destroy = on_mount.map(run).filter(is_function);
-                if (on_destroy) {
-                    on_destroy.push(...new_on_destroy);
+                const new_on_destroy = component.$$.on_mount.map(run).filter(is_function);
+                // if the component was destroyed immediately
+                // it will update the `$$.on_destroy` reference to `null`.
+                // the destructured on_destroy may still reference to the old array
+                if (component.$$.on_destroy) {
+                    component.$$.on_destroy.push(...new_on_destroy);
                 }
                 else {
                     // Edge case - component was destroyed immediately,
@@ -545,6 +659,7 @@ var app = (function () {
     function destroy_component(component, detaching) {
         const $$ = component.$$;
         if ($$.fragment !== null) {
+            flush_render_callbacks($$.after_update);
             run_all($$.on_destroy);
             $$.fragment && $$.fragment.d(detaching);
             // TODO null out other refs, including component.$$ (but need to
@@ -561,12 +676,12 @@ var app = (function () {
         }
         component.$$.dirty[(i / 31) | 0] |= (1 << (i % 31));
     }
-    function init(component, options, instance, create_fragment, not_equal, props, dirty = [-1]) {
+    function init(component, options, instance, create_fragment, not_equal, props, append_styles, dirty = [-1]) {
         const parent_component = current_component;
         set_current_component(component);
         const $$ = component.$$ = {
             fragment: null,
-            ctx: null,
+            ctx: [],
             // state
             props,
             update: noop,
@@ -578,12 +693,14 @@ var app = (function () {
             on_disconnect: [],
             before_update: [],
             after_update: [],
-            context: new Map(parent_component ? parent_component.$$.context : options.context || []),
+            context: new Map(options.context || (parent_component ? parent_component.$$.context : [])),
             // everything else
             callbacks: blank_object(),
             dirty,
-            skip_bound: false
+            skip_bound: false,
+            root: options.target || parent_component.$$.root
         };
+        append_styles && append_styles($$.root);
         let ready = false;
         $$.ctx = instance
             ? instance(component, options.props || {}, (i, ret, ...rest) => {
@@ -629,6 +746,9 @@ var app = (function () {
             this.$destroy = noop;
         }
         $on(type, callback) {
+            if (!is_function(callback)) {
+                return noop;
+            }
             const callbacks = (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
             callbacks.push(callback);
             return () => {
@@ -647,7 +767,7 @@ var app = (function () {
     }
 
     function dispatch_dev(type, detail) {
-        document.dispatchEvent(custom_event(type, Object.assign({ version: '3.38.2' }, detail)));
+        document.dispatchEvent(custom_event(type, Object.assign({ version: '3.59.2' }, detail), { bubbles: true }));
     }
     function append_dev(target, node) {
         dispatch_dev('SvelteDOMInsert', { target, node });
@@ -661,12 +781,14 @@ var app = (function () {
         dispatch_dev('SvelteDOMRemove', { node });
         detach(node);
     }
-    function listen_dev(node, event, handler, options, has_prevent_default, has_stop_propagation) {
+    function listen_dev(node, event, handler, options, has_prevent_default, has_stop_propagation, has_stop_immediate_propagation) {
         const modifiers = options === true ? ['capture'] : options ? Array.from(Object.keys(options)) : [];
         if (has_prevent_default)
             modifiers.push('preventDefault');
         if (has_stop_propagation)
             modifiers.push('stopPropagation');
+        if (has_stop_immediate_propagation)
+            modifiers.push('stopImmediatePropagation');
         dispatch_dev('SvelteDOMAddEventListener', { node, event, handler, modifiers });
         const dispose = listen(node, event, handler, options);
         return () => {
@@ -683,7 +805,7 @@ var app = (function () {
     }
     function set_data_dev(text, data) {
         data = '' + data;
-        if (text.wholeText === data)
+        if (text.data === data)
             return;
         dispatch_dev('SvelteDOMSetData', { node: text, data });
         text.data = data;
@@ -724,7 +846,7 @@ var app = (function () {
         $inject_state() { }
     }
 
-    /* src\components\MenuButton.svelte generated by Svelte v3.38.2 */
+    /* src\components\MenuButton.svelte generated by Svelte v3.59.2 */
     const file$7 = "src\\components\\MenuButton.svelte";
 
     function create_fragment$9(ctx) {
@@ -769,9 +891,9 @@ var app = (function () {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(window, "resize", /*handleResize*/ ctx[3], false, false, false),
+    					listen_dev(window, "resize", /*handleResize*/ ctx[3], false, false, false, false),
     					listen_dev(window, "resize", /*onwindowresize*/ ctx[4]),
-    					listen_dev(div3, "click", /*toggle*/ ctx[2], false, false, false)
+    					listen_dev(div3, "click", /*toggle*/ ctx[2], false, false, false, false)
     				];
 
     				mounted = true;
@@ -805,32 +927,32 @@ var app = (function () {
     function instance$9($$self, $$props, $$invalidate) {
     	let innerWidth;
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("MenuButton", slots, []);
+    	validate_slots('MenuButton', slots, []);
     	const dispatch = createEventDispatcher();
-    	let { showClass = "" } = $$props;
+    	let { showClass = '' } = $$props;
 
     	const toggle = () => {
-    		dispatch("menu");
+    		dispatch('menu');
 
     		if (innerWidth > 992) {
-    			$$invalidate(0, showClass = "");
-    		} else if (innerWidth < 992 && showClass === "change") {
-    			$$invalidate(0, showClass = "");
-    		} else if (innerWidth < 992 && showClass === "") {
-    			$$invalidate(0, showClass = "change");
+    			$$invalidate(0, showClass = '');
+    		} else if (innerWidth < 992 && showClass === 'change') {
+    			$$invalidate(0, showClass = '');
+    		} else if (innerWidth < 992 && showClass === '') {
+    			$$invalidate(0, showClass = 'change');
     		}
     	};
 
     	const handleResize = () => {
     		if (innerWidth > 992) {
-    			$$invalidate(0, showClass = "");
+    			$$invalidate(0, showClass = '');
     		}
     	};
 
-    	const writable_props = ["showClass"];
+    	const writable_props = ['showClass'];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<MenuButton> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<MenuButton> was created with unknown prop '${key}'`);
     	});
 
     	function onwindowresize() {
@@ -838,7 +960,7 @@ var app = (function () {
     	}
 
     	$$self.$$set = $$props => {
-    		if ("showClass" in $$props) $$invalidate(0, showClass = $$props.showClass);
+    		if ('showClass' in $$props) $$invalidate(0, showClass = $$props.showClass);
     	};
 
     	$$self.$capture_state = () => ({
@@ -851,8 +973,8 @@ var app = (function () {
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("showClass" in $$props) $$invalidate(0, showClass = $$props.showClass);
-    		if ("innerWidth" in $$props) $$invalidate(1, innerWidth = $$props.innerWidth);
+    		if ('showClass' in $$props) $$invalidate(0, showClass = $$props.showClass);
+    		if ('innerWidth' in $$props) $$invalidate(1, innerWidth = $$props.innerWidth);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -895,12 +1017,14 @@ var app = (function () {
         const target_opacity = +style.opacity;
         const transform = style.transform === 'none' ? '' : style.transform;
         const od = target_opacity * (1 - opacity);
+        const [xValue, xUnit] = split_css_unit(x);
+        const [yValue, yUnit] = split_css_unit(y);
         return {
             delay,
             duration,
             easing,
             css: (t, u) => `
-			transform: ${transform} translate(${(1 - t) * x}px, ${(1 - t) * y}px);
+			transform: ${transform} translate(${(1 - t) * xValue}${xUnit}, ${(1 - t) * yValue}${yUnit});
 			opacity: ${target_opacity - (od * u)}`
         };
     }
@@ -909,20 +1033,19 @@ var app = (function () {
     /**
      * Create a `Writable` store that allows both updating and reading by subscription.
      * @param {*=}value initial value
-     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
+     * @param {StartStopNotifier=} start
      */
     function writable(value, start = noop) {
         let stop;
-        const subscribers = [];
+        const subscribers = new Set();
         function set(new_value) {
             if (safe_not_equal(value, new_value)) {
                 value = new_value;
                 if (stop) { // store is ready
                     const run_queue = !subscriber_queue.length;
-                    for (let i = 0; i < subscribers.length; i += 1) {
-                        const s = subscribers[i];
-                        s[1]();
-                        subscriber_queue.push(s, value);
+                    for (const subscriber of subscribers) {
+                        subscriber[1]();
+                        subscriber_queue.push(subscriber, value);
                     }
                     if (run_queue) {
                         for (let i = 0; i < subscriber_queue.length; i += 2) {
@@ -938,17 +1061,14 @@ var app = (function () {
         }
         function subscribe(run, invalidate = noop) {
             const subscriber = [run, invalidate];
-            subscribers.push(subscriber);
-            if (subscribers.length === 1) {
+            subscribers.add(subscriber);
+            if (subscribers.size === 1) {
                 stop = start(set) || noop;
             }
             run(value);
             return () => {
-                const index = subscribers.indexOf(subscriber);
-                if (index !== -1) {
-                    subscribers.splice(index, 1);
-                }
-                if (subscribers.length === 0) {
+                subscribers.delete(subscriber);
+                if (subscribers.size === 0 && stop) {
                     stop();
                     stop = null;
                 }
@@ -973,7 +1093,7 @@ var app = (function () {
 
     const textColorStore = persistStore('Text-Color', '#fffff');
 
-    /* src\components\Todo.svelte generated by Svelte v3.38.2 */
+    /* src\components\Todo.svelte generated by Svelte v3.59.2 */
     const file$6 = "src\\components\\Todo.svelte";
 
     // (33:8) {#if isDone}
@@ -1019,7 +1139,7 @@ var app = (function () {
     			t = text(/*todo*/ ctx[0]);
     			attr_dev(span, "id", "text");
     			attr_dev(span, "type", "text");
-    			attr_dev(span, "class", span_class_value = " " + (/*isDone*/ ctx[1] ? "done" : "") + " center" + " svelte-mjjvw9");
+    			attr_dev(span, "class", span_class_value = "" + (/*isDone*/ ctx[1] ? 'done' : '') + " center" + " svelte-mjjvw9");
     			set_style(span, "color", /*textColor*/ ctx[3]);
     			add_location(span, file$6, 41, 8, 1341);
     		},
@@ -1028,14 +1148,14 @@ var app = (function () {
     			append_dev(span, t);
 
     			if (!mounted) {
-    				dispose = listen_dev(span, "click", stop_propagation(/*updateTodo*/ ctx[8]), false, false, true);
+    				dispose = listen_dev(span, "click", stop_propagation(/*updateTodo*/ ctx[8]), false, false, true, false);
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
     			if (dirty & /*todo*/ 1) set_data_dev(t, /*todo*/ ctx[0]);
 
-    			if (dirty & /*isDone*/ 2 && span_class_value !== (span_class_value = " " + (/*isDone*/ ctx[1] ? "done" : "") + " center" + " svelte-mjjvw9")) {
+    			if (dirty & /*isDone*/ 2 && span_class_value !== (span_class_value = "" + (/*isDone*/ ctx[1] ? 'done' : '') + " center" + " svelte-mjjvw9")) {
     				attr_dev(span, "class", span_class_value);
     			}
 
@@ -1089,7 +1209,7 @@ var app = (function () {
     			if (!mounted) {
     				dispose = [
     					listen_dev(input, "input", /*input_input_handler*/ ctx[10]),
-    					listen_dev(form, "submit", prevent_default(/*editTodo*/ ctx[7]), false, true, false)
+    					listen_dev(form, "submit", prevent_default(/*editTodo*/ ctx[7]), false, true, false, false)
     				];
 
     				mounted = true;
@@ -1194,9 +1314,9 @@ var app = (function () {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(span0, "click", stop_propagation(/*updateTodo*/ ctx[8]), false, false, true),
-    					listen_dev(span1, "click", stop_propagation(/*editTodo*/ ctx[7]), false, false, true),
-    					listen_dev(span2, "click", stop_propagation(/*removeTodo*/ ctx[6]), false, false, true)
+    					listen_dev(span0, "click", stop_propagation(/*updateTodo*/ ctx[8]), false, false, true, false),
+    					listen_dev(span1, "click", stop_propagation(/*editTodo*/ ctx[7]), false, false, true, false),
+    					listen_dev(span2, "click", stop_propagation(/*removeTodo*/ ctx[6]), false, false, true, false)
     				];
 
     				mounted = true;
@@ -1234,8 +1354,9 @@ var app = (function () {
     			if (current) return;
 
     			add_render_callback(() => {
+    				if (!current) return;
     				if (li_outro) li_outro.end(1);
-    				if (!li_intro) li_intro = create_in_transition(li, fly, { x: 200, duration: 500 });
+    				li_intro = create_in_transition(li, fly, { x: 200, duration: 500 });
     				li_intro.start();
     			});
 
@@ -1269,34 +1390,48 @@ var app = (function () {
 
     function instance$8($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("Todo", slots, []);
-    	let { todo } = $$props, { id } = $$props, { isDone } = $$props;
+    	validate_slots('Todo', slots, []);
+    	let { todo, id, isDone } = $$props;
     	const dispatch = createEventDispatcher();
     	let todoColor, textColor;
     	let editable = false;
     	let newTodo = todo;
     	todoColorStore.subscribe(col => $$invalidate(2, todoColor = col));
     	textColorStore.subscribe(col => $$invalidate(3, textColor = col));
-    	const removeTodo = () => dispatch("remove", id);
+    	const removeTodo = () => dispatch('remove', id);
 
     	const editTodo = () => {
     		$$invalidate(4, editable = !editable);
 
     		if (todo != newTodo) {
     			$$invalidate(0, todo = newTodo);
-    			dispatch("update", { id, isDone, todo });
+    			dispatch('update', { id, isDone, todo });
     		}
     	};
 
     	const updateTodo = () => {
     		$$invalidate(1, isDone = !isDone);
-    		dispatch("update", { id, isDone, todo });
+    		dispatch('update', { id, isDone, todo });
     	};
 
-    	const writable_props = ["todo", "id", "isDone"];
+    	$$self.$$.on_mount.push(function () {
+    		if (todo === undefined && !('todo' in $$props || $$self.$$.bound[$$self.$$.props['todo']])) {
+    			console.warn("<Todo> was created without expected prop 'todo'");
+    		}
+
+    		if (id === undefined && !('id' in $$props || $$self.$$.bound[$$self.$$.props['id']])) {
+    			console.warn("<Todo> was created without expected prop 'id'");
+    		}
+
+    		if (isDone === undefined && !('isDone' in $$props || $$self.$$.bound[$$self.$$.props['isDone']])) {
+    			console.warn("<Todo> was created without expected prop 'isDone'");
+    		}
+    	});
+
+    	const writable_props = ['todo', 'id', 'isDone'];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Todo> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Todo> was created with unknown prop '${key}'`);
     	});
 
     	function input_input_handler() {
@@ -1305,9 +1440,9 @@ var app = (function () {
     	}
 
     	$$self.$$set = $$props => {
-    		if ("todo" in $$props) $$invalidate(0, todo = $$props.todo);
-    		if ("id" in $$props) $$invalidate(9, id = $$props.id);
-    		if ("isDone" in $$props) $$invalidate(1, isDone = $$props.isDone);
+    		if ('todo' in $$props) $$invalidate(0, todo = $$props.todo);
+    		if ('id' in $$props) $$invalidate(9, id = $$props.id);
+    		if ('isDone' in $$props) $$invalidate(1, isDone = $$props.isDone);
     	};
 
     	$$self.$capture_state = () => ({
@@ -1329,13 +1464,13 @@ var app = (function () {
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("todo" in $$props) $$invalidate(0, todo = $$props.todo);
-    		if ("id" in $$props) $$invalidate(9, id = $$props.id);
-    		if ("isDone" in $$props) $$invalidate(1, isDone = $$props.isDone);
-    		if ("todoColor" in $$props) $$invalidate(2, todoColor = $$props.todoColor);
-    		if ("textColor" in $$props) $$invalidate(3, textColor = $$props.textColor);
-    		if ("editable" in $$props) $$invalidate(4, editable = $$props.editable);
-    		if ("newTodo" in $$props) $$invalidate(5, newTodo = $$props.newTodo);
+    		if ('todo' in $$props) $$invalidate(0, todo = $$props.todo);
+    		if ('id' in $$props) $$invalidate(9, id = $$props.id);
+    		if ('isDone' in $$props) $$invalidate(1, isDone = $$props.isDone);
+    		if ('todoColor' in $$props) $$invalidate(2, todoColor = $$props.todoColor);
+    		if ('textColor' in $$props) $$invalidate(3, textColor = $$props.textColor);
+    		if ('editable' in $$props) $$invalidate(4, editable = $$props.editable);
+    		if ('newTodo' in $$props) $$invalidate(5, newTodo = $$props.newTodo);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -1368,21 +1503,6 @@ var app = (function () {
     			options,
     			id: create_fragment$8.name
     		});
-
-    		const { ctx } = this.$$;
-    		const props = options.props || {};
-
-    		if (/*todo*/ ctx[0] === undefined && !("todo" in props)) {
-    			console.warn("<Todo> was created without expected prop 'todo'");
-    		}
-
-    		if (/*id*/ ctx[9] === undefined && !("id" in props)) {
-    			console.warn("<Todo> was created without expected prop 'id'");
-    		}
-
-    		if (/*isDone*/ ctx[1] === undefined && !("isDone" in props)) {
-    			console.warn("<Todo> was created without expected prop 'isDone'");
-    		}
     	}
 
     	get todo() {
@@ -1414,7 +1534,7 @@ var app = (function () {
 
     const todoStore$1 = persistStore('Todos', []);
 
-    /* src\components\TodoList.svelte generated by Svelte v3.38.2 */
+    /* src\components\TodoList.svelte generated by Svelte v3.59.2 */
 
     const { console: console_1 } = globals;
     const file$5 = "src\\components\\TodoList.svelte";
@@ -1440,7 +1560,7 @@ var app = (function () {
     	let t2;
     	let ul;
     	let current;
-    	let each_value_1 = /*todos*/ ctx[0];
+    	let each_value_1 = /*todos*/ ctx[1];
     	validate_each_argument(each_value_1);
     	let each_blocks = [];
 
@@ -1482,14 +1602,16 @@ var app = (function () {
     			insert_dev(target, ul, anchor);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(ul, null);
+    				if (each_blocks[i]) {
+    					each_blocks[i].m(ul, null);
+    				}
     			}
 
     			current = true;
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty & /*todos, removeChild, updateChild*/ 13) {
-    				each_value_1 = /*todos*/ ctx[0];
+    			if (dirty & /*todos, removeChild, updateChild*/ 14) {
+    				each_value_1 = /*todos*/ ctx[1];
     				validate_each_argument(each_value_1);
     				let i;
 
@@ -1579,7 +1701,7 @@ var app = (function () {
     			current = true;
     		},
     		p: function update(ctx, dirty) {
-    			const todo_changes = (dirty & /*todos*/ 1)
+    			const todo_changes = (dirty & /*todos*/ 2)
     			? get_spread_update(todo_spread_levels, [get_spread_object(/*todo*/ ctx[9])])
     			: {};
 
@@ -1619,7 +1741,7 @@ var app = (function () {
     	let t2;
     	let ul;
     	let current;
-    	let each_value = /*finishedTodos*/ ctx[1];
+    	let each_value = /*finishedTodos*/ ctx[0];
     	validate_each_argument(each_value);
     	let each_blocks = [];
 
@@ -1661,14 +1783,16 @@ var app = (function () {
     			insert_dev(target, ul, anchor);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(ul, null);
+    				if (each_blocks[i]) {
+    					each_blocks[i].m(ul, null);
+    				}
     			}
 
     			current = true;
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty & /*finishedTodos, removeChild, updateChild*/ 14) {
-    				each_value = /*finishedTodos*/ ctx[1];
+    			if (dirty & /*finishedTodos, removeChild, updateChild*/ 13) {
+    				each_value = /*finishedTodos*/ ctx[0];
     				validate_each_argument(each_value);
     				let i;
 
@@ -1758,7 +1882,7 @@ var app = (function () {
     			current = true;
     		},
     		p: function update(ctx, dirty) {
-    			const todo_changes = (dirty & /*finishedTodos*/ 2)
+    			const todo_changes = (dirty & /*finishedTodos*/ 1)
     			? get_spread_update(todo_spread_levels, [get_spread_object(/*finished*/ ctx[6])])
     			: {};
 
@@ -1795,8 +1919,8 @@ var app = (function () {
     	let t1;
     	let if_block1_anchor;
     	let current;
-    	let if_block0 = /*todos*/ ctx[0].length != 0 && create_if_block_1(ctx);
-    	let if_block1 = /*finishedTodos*/ ctx[1].length != 0 && create_if_block$1(ctx);
+    	let if_block0 = /*todos*/ ctx[1].length != 0 && create_if_block_1(ctx);
+    	let if_block1 = /*finishedTodos*/ ctx[0].length != 0 && create_if_block$1(ctx);
 
     	const block = {
     		c: function create() {
@@ -1821,11 +1945,11 @@ var app = (function () {
     			current = true;
     		},
     		p: function update(ctx, [dirty]) {
-    			if (/*todos*/ ctx[0].length != 0) {
+    			if (/*todos*/ ctx[1].length != 0) {
     				if (if_block0) {
     					if_block0.p(ctx, dirty);
 
-    					if (dirty & /*todos*/ 1) {
+    					if (dirty & /*todos*/ 2) {
     						transition_in(if_block0, 1);
     					}
     				} else {
@@ -1844,11 +1968,11 @@ var app = (function () {
     				check_outros();
     			}
 
-    			if (/*finishedTodos*/ ctx[1].length != 0) {
+    			if (/*finishedTodos*/ ctx[0].length != 0) {
     				if (if_block1) {
     					if_block1.p(ctx, dirty);
 
-    					if (dirty & /*finishedTodos*/ 2) {
+    					if (dirty & /*finishedTodos*/ 1) {
     						transition_in(if_block1, 1);
     					}
     				} else {
@@ -1903,10 +2027,10 @@ var app = (function () {
     	let todos;
     	let finishedTodos;
     	let $todoStore;
-    	validate_store(todoStore$1, "todoStore");
+    	validate_store(todoStore$1, 'todoStore');
     	component_subscribe($$self, todoStore$1, $$value => $$invalidate(4, $todoStore = $$value));
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("TodoList", slots, []);
+    	validate_slots('TodoList', slots, []);
     	let userID;
     	idStore.subscribe(data => userID = data);
 
@@ -1915,7 +2039,7 @@ var app = (function () {
     	};
 
     	const updateChild = ({ detail }) => {
-    		console.log("The one that was clicked:");
+    		console.log('The one that was clicked:');
     		console.log(detail);
     		const index = $todoStore.findIndex(item => item.id === detail.id);
     		set_store_value(todoStore$1, $todoStore[index] = detail, $todoStore);
@@ -1924,7 +2048,7 @@ var app = (function () {
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<TodoList> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1.warn(`<TodoList> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$capture_state = () => ({
@@ -1934,15 +2058,15 @@ var app = (function () {
     		userID,
     		removeChild,
     		updateChild,
-    		$todoStore,
+    		finishedTodos,
     		todos,
-    		finishedTodos
+    		$todoStore
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("userID" in $$props) userID = $$props.userID;
-    		if ("todos" in $$props) $$invalidate(0, todos = $$props.todos);
-    		if ("finishedTodos" in $$props) $$invalidate(1, finishedTodos = $$props.finishedTodos);
+    		if ('userID' in $$props) userID = $$props.userID;
+    		if ('finishedTodos' in $$props) $$invalidate(0, finishedTodos = $$props.finishedTodos);
+    		if ('todos' in $$props) $$invalidate(1, todos = $$props.todos);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -1951,15 +2075,15 @@ var app = (function () {
 
     	$$self.$$.update = () => {
     		if ($$self.$$.dirty & /*$todoStore*/ 16) {
-    			$$invalidate(0, todos = $todoStore.filter(todo => !todo.isDone));
+    			$$invalidate(1, todos = $todoStore.filter(todo => !todo.isDone));
     		}
 
     		if ($$self.$$.dirty & /*$todoStore*/ 16) {
-    			$$invalidate(1, finishedTodos = $todoStore.filter(todo => todo.isDone));
+    			$$invalidate(0, finishedTodos = $todoStore.filter(todo => todo.isDone));
     		}
     	};
 
-    	return [todos, finishedTodos, removeChild, updateChild, $todoStore];
+    	return [finishedTodos, todos, removeChild, updateChild, $todoStore];
     }
 
     class TodoList extends SvelteComponentDev {
@@ -1976,7 +2100,7 @@ var app = (function () {
     	}
     }
 
-    /* src\components\newTodoButton.svelte generated by Svelte v3.38.2 */
+    /* src\components\newTodoButton.svelte generated by Svelte v3.59.2 */
 
     const file$4 = "src\\components\\newTodoButton.svelte";
 
@@ -2018,36 +2142,42 @@ var app = (function () {
 
     function instance$6($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("NewTodoButton", slots, []);
+    	validate_slots('NewTodoButton', slots, []);
     	let { todoTextLength } = $$props;
     	let visable = false;
-    	let textField = "";
+    	let textField = '';
 
     	const addTodo = async e => {
     		if (textField.length > todoTextLength) {
-    			alert("Max 80 characters & needs to be bigger tha 0 character");
-    			textField = "";
+    			alert('Max 80 characters & needs to be bigger tha 0 character');
+    			textField = '';
     			return;
     		}
 
     		e.preventDefault();
-    		let todo = { "todo": textField, "isDone": false };
+    		let todo = { 'todo': textField, 'isDone': false };
 
     		textField
     		? todoStore.update(orignalArray => [...orignalArray, todo])
-    		: "";
+    		: '';
 
-    		textField = "";
+    		textField = '';
     	};
 
-    	const writable_props = ["todoTextLength"];
+    	$$self.$$.on_mount.push(function () {
+    		if (todoTextLength === undefined && !('todoTextLength' in $$props || $$self.$$.bound[$$self.$$.props['todoTextLength']])) {
+    			console.warn("<NewTodoButton> was created without expected prop 'todoTextLength'");
+    		}
+    	});
+
+    	const writable_props = ['todoTextLength'];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<NewTodoButton> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<NewTodoButton> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$$set = $$props => {
-    		if ("todoTextLength" in $$props) $$invalidate(0, todoTextLength = $$props.todoTextLength);
+    		if ('todoTextLength' in $$props) $$invalidate(0, todoTextLength = $$props.todoTextLength);
     	};
 
     	$$self.$capture_state = () => ({
@@ -2058,9 +2188,9 @@ var app = (function () {
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("todoTextLength" in $$props) $$invalidate(0, todoTextLength = $$props.todoTextLength);
-    		if ("visable" in $$props) visable = $$props.visable;
-    		if ("textField" in $$props) textField = $$props.textField;
+    		if ('todoTextLength' in $$props) $$invalidate(0, todoTextLength = $$props.todoTextLength);
+    		if ('visable' in $$props) visable = $$props.visable;
+    		if ('textField' in $$props) textField = $$props.textField;
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -2081,13 +2211,6 @@ var app = (function () {
     			options,
     			id: create_fragment$6.name
     		});
-
-    		const { ctx } = this.$$;
-    		const props = options.props || {};
-
-    		if (/*todoTextLength*/ ctx[0] === undefined && !("todoTextLength" in props)) {
-    			console.warn("<NewTodoButton> was created without expected prop 'todoTextLength'");
-    		}
     	}
 
     	get todoTextLength() {
@@ -2099,7 +2222,7 @@ var app = (function () {
     	}
     }
 
-    /* src\components\newTodoForm.svelte generated by Svelte v3.38.2 */
+    /* src\components\newTodoForm.svelte generated by Svelte v3.59.2 */
 
     function create_fragment$5(ctx) {
     	const block = {
@@ -2127,11 +2250,11 @@ var app = (function () {
 
     function instance$5($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("NewTodoForm", slots, []);
+    	validate_slots('NewTodoForm', slots, []);
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<NewTodoForm> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<NewTodoForm> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$capture_state = () => ({ NewTodoButton });
@@ -2152,7 +2275,7 @@ var app = (function () {
     	}
     }
 
-    /* src\components\newTodo.svelte generated by Svelte v3.38.2 */
+    /* src\components\newTodo.svelte generated by Svelte v3.59.2 */
 
     function create_fragment$4(ctx) {
     	let newtodobutton;
@@ -2198,11 +2321,11 @@ var app = (function () {
 
     function instance$4($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("NewTodo", slots, []);
+    	validate_slots('NewTodo', slots, []);
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<NewTodo> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<NewTodo> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$capture_state = () => ({ NewTodoForm, NewTodoButton });
@@ -2223,7 +2346,7 @@ var app = (function () {
     	}
     }
 
-    /* src\components\ListItem.svelte generated by Svelte v3.38.2 */
+    /* src\components\ListItem.svelte generated by Svelte v3.59.2 */
 
     const file$3 = "src\\components\\ListItem.svelte";
 
@@ -2274,28 +2397,28 @@ var app = (function () {
 
     function instance$3($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("ListItem", slots, []);
+    	validate_slots('ListItem', slots, []);
 
     	let { list = {
-    		"name": "lista1",
-    		"id": "abc123",
-    		"todos": ["handla", "fiska", "äta"]
+    		'name': 'lista1',
+    		'id': 'abc123',
+    		'todos': ['handla', 'fiska', 'äta']
     	} } = $$props;
 
-    	const writable_props = ["list"];
+    	const writable_props = ['list'];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<ListItem> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<ListItem> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$$set = $$props => {
-    		if ("list" in $$props) $$invalidate(0, list = $$props.list);
+    		if ('list' in $$props) $$invalidate(0, list = $$props.list);
     	};
 
     	$$self.$capture_state = () => ({ list });
 
     	$$self.$inject_state = $$props => {
-    		if ("list" in $$props) $$invalidate(0, list = $$props.list);
+    		if ('list' in $$props) $$invalidate(0, list = $$props.list);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -2327,7 +2450,7 @@ var app = (function () {
     	}
     }
 
-    /* src\components\List.svelte generated by Svelte v3.38.2 */
+    /* src\components\List.svelte generated by Svelte v3.59.2 */
     const file$2 = "src\\components\\List.svelte";
 
     function get_each_context(ctx, list, i) {
@@ -2427,7 +2550,9 @@ var app = (function () {
     			append_dev(div, ul);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(ul, null);
+    				if (each_blocks[i]) {
+    					each_blocks[i].m(ul, null);
+    				}
     			}
 
     			current = true;
@@ -2498,31 +2623,31 @@ var app = (function () {
 
     function instance$2($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("List", slots, []);
+    	validate_slots('List', slots, []);
 
     	let lists = [
     		{
-    			"name": "lista1",
-    			"id": "abc123",
-    			"todos": ["handla", "fiska", "äta"]
+    			'name': 'lista1',
+    			'id': 'abc123',
+    			'todos': ['handla', 'fiska', 'äta']
     		},
     		{
-    			"name": "lista2",
-    			"id": "xyz789",
-    			"todos": ["handla", "fiska", "äta", "tvätta kläder"]
+    			'name': 'lista2',
+    			'id': 'xyz789',
+    			'todos': ['handla', 'fiska', 'äta', 'tvätta kläder']
     		}
     	];
 
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<List> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<List> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$capture_state = () => ({ ListItem, lists });
 
     	$$self.$inject_state = $$props => {
-    		if ("lists" in $$props) $$invalidate(0, lists = $$props.lists);
+    		if ('lists' in $$props) $$invalidate(0, lists = $$props.lists);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -2546,7 +2671,7 @@ var app = (function () {
     	}
     }
 
-    /* src\components\Menu.svelte generated by Svelte v3.38.2 */
+    /* src\components\Menu.svelte generated by Svelte v3.59.2 */
     const file$1 = "src\\components\\Menu.svelte";
 
     function create_fragment$1(ctx) {
@@ -2566,7 +2691,7 @@ var app = (function () {
     			create_component(list.$$.fragment);
     			t = space();
     			img = element("img");
-    			if (img.src !== (img_src_value = "./img/settings.png")) attr_dev(img, "src", img_src_value);
+    			if (!src_url_equal(img.src, img_src_value = "./img/settings.png")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "");
     			attr_dev(img, "class", "svelte-12rzzae");
     			add_location(img, file$1, 7, 1, 202);
@@ -2590,8 +2715,9 @@ var app = (function () {
     			transition_in(list.$$.fragment, local);
 
     			add_render_callback(() => {
+    				if (!current) return;
     				if (div_outro) div_outro.end(1);
-    				if (!div_intro) div_intro = create_in_transition(div, fly, { y: -100, duration: 500 });
+    				div_intro = create_in_transition(div, fly, { y: -100, duration: 500 });
     				div_intro.start();
     			});
 
@@ -2623,11 +2749,11 @@ var app = (function () {
 
     function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("Menu", slots, []);
+    	validate_slots('Menu', slots, []);
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Menu> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Menu> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$capture_state = () => ({ fly, List });
@@ -2652,7 +2778,7 @@ var app = (function () {
 
     const appStore = persistStore('App-status', 'new');
 
-    /* src\App.svelte generated by Svelte v3.38.2 */
+    /* src\App.svelte generated by Svelte v3.59.2 */
 
     const { window: window_1 } = globals;
     const file = "src\\App.svelte";
@@ -2768,7 +2894,7 @@ var app = (function () {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(window_1, "resize", /*handleResize*/ ctx[3], false, false, false),
+    					listen_dev(window_1, "resize", /*handleResize*/ ctx[3], false, false, false, false),
     					listen_dev(window_1, "resize", /*onwindowresize*/ ctx[4])
     				];
 
@@ -2837,7 +2963,7 @@ var app = (function () {
     function instance($$self, $$props, $$invalidate) {
     	let innerWidth;
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("App", slots, []);
+    	validate_slots('App', slots, []);
 
     	onMount(() => {
     		if (innerWidth > 992) $$invalidate(0, menuVisable = true);
@@ -2860,7 +2986,7 @@ var app = (function () {
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<App> was created with unknown prop '${key}'`);
     	});
 
     	function onwindowresize() {
@@ -2883,9 +3009,9 @@ var app = (function () {
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("menuVisable" in $$props) $$invalidate(0, menuVisable = $$props.menuVisable);
-    		if ("choice" in $$props) choice = $$props.choice;
-    		if ("innerWidth" in $$props) $$invalidate(1, innerWidth = $$props.innerWidth);
+    		if ('menuVisable' in $$props) $$invalidate(0, menuVisable = $$props.menuVisable);
+    		if ('choice' in $$props) choice = $$props.choice;
+    		if ('innerWidth' in $$props) $$invalidate(1, innerWidth = $$props.innerWidth);
     	};
 
     	if ($$props && "$$inject" in $$props) {
